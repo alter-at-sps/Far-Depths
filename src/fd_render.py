@@ -22,16 +22,23 @@ def load_shader(shader_type, path):
 
     return s
 
-class FDContext:
+class FDRenderer:
     def __init__(self, res):
-        self.win = pg.display.set_mode(res, pg.OPENGL | pg.DOUBLEBUF, vsync=1)
+        self.res = res
+
+        pg.init()
+
+        # disable depricated legacy immediate mode
+        pg.display.gl_set_attribute(pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE)
+        self.win = pg.display.set_mode(res, pg.OPENGL | pg.DOUBLEBUF | pg.RESIZABLE, vsync=1)
         
-        self.create_pg_framebuffer(res)
-        self.set_post_process_shader("src/uber_post.vert", "src/uber_post.frag")
+        self.create_pg_framebuffer()
+        self.create_offscreen_framebuffers()
+        self.render_passes = []
 
     # creates a "shared" pygame opengl texture framebuffer
-    def create_pg_framebuffer(self, res):
-        self.pg_fb = pg.Surface(res)
+    def create_pg_framebuffer(self):
+        self.pg_fb = pg.Surface(self.res)
         self.pg_fb_texture = gl.glGenTextures(1)
 
         # setup fb texture
@@ -49,58 +56,95 @@ class FDContext:
     def flip_pg_framebuffer(self):
         gl.glBindTexture(gl.GL_TEXTURE_2D, self.pg_fb_texture)
 
-        rgba_surface = pg.image.tostring(self.pg_fb, 'RGBA')
-        width, height = self.pg_fb.get_size()
+        rgba_surface = pg.image.tostring(pg.transform.flip(self.pg_fb, False, True), 'RGBA')
 
-        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGBA, width, height, 0, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, rgba_surface)
+        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGBA, self.res[0], self.res[1], 0, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, rgba_surface)
 
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
-    # load post-processing program
-    def set_post_process_shader(self, vert, frag):
-        vs = load_shader(gl.GL_VERTEX_SHADER, vert)
-        fs = load_shader(gl.GL_FRAGMENT_SHADER, frag)
+        self.pg_fb.fill((0, 0, 0)) # clear pygame side framebuffer
 
-        p = gl.glCreateProgram()
+    def create_offscreen_framebuffers(self):
+        self.fbs = gl.glGenFramebuffers(2)
+        self.fb_attachments = gl.glGenTextures(2)
 
-        gl.glAttachShader(p, vs)
-        gl.glAttachShader(p, fs)
-    
-        gl.glLinkProgram(p)
+        # setup textures that backup the framebuffers
+        for attach in self.fb_attachments:
+            gl.glBindTexture(gl.GL_TEXTURE_2D, attach)
 
-        result = gl.glGetProgramiv(p, gl.GL_LINK_STATUS)
+            gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, self.res[0], self.res[1], 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, None)
 
-        if not result:
-            log = gl.glGetProgramInfoLog(p)
+            gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
+            gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
 
-            print("error while linking a Gl shader program: ", log)
-            quit()
+        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+        
+        # bind textures to frambuffers as attachments to be used for rendering
+        for i in range(2):
+            gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, self.fbs[i])
 
-        gl.glDeleteShader(vs)
-        gl.glDeleteShader(fs)
+            gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0, gl.GL_TEXTURE_2D, self.fb_attachments[i], 0)
 
-        self.post_process_pass = p
+            if not gl.glCheckFramebufferStatus(gl.GL_FRAMEBUFFER) == gl.GL_FRAMEBUFFER_COMPLETE:
+                print("fd renderer: failed to init offscreen framebuffers!")
+                quit()
+
+        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
 
     def post_process(self):
         # gl.glClearColor(.1, .1, .1, 1)
         # gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
-        gl.glUseProgram(self.post_process_pass)
+        for i, rpass in enumerate(self.render_passes):
+            in_tex = self.fb_attachments[(i - 1) % 2]
+            out_fb = self.fbs[i % 2]
 
-        gl.glBindTexture(gl.GL_TEXTURE_2D, self.pg_fb_texture)
-        # gl.glUniform1f(time_loc, time_)
-    
-        gl.glDrawArrays(gl.GL_TRIANGLES, 0, 3)
+            # first pass reads from pygame fb
+            if i == 0:
+                in_tex = self.pg_fb_texture
+
+            # last pass renders to window framebuffer
+            if i == len(self.render_passes) - 1:
+                out_fb = 0
+
+            rpass["frame"](rpass, in_tex, out_fb)
 
 # == init the renderer ==
 
-fd_renderer = FDContext((1280, 720))
+fd_renderer = FDRenderer((1280, 720))
 
 # == renderer api ==
 
 # get surface that pygame draws to
 def get_surface():
     return fd_renderer.pg_fb
+
+# resets the current post-processing passes (eg. for changing post-processing profiles)
+def reset_passes():
+    for rpass in fd_renderer.render_passes:
+        cleanup = rpass.get("cleanup")
+
+        if not cleanup == None:
+            cleanup(rpass)
+
+    fd_renderer.render_passes.clear()
+
+def add_pass(rpass):
+    fd_renderer.render_passes.append(rpass)
+
+# call this when the rendering window is resized
+def recreate_renderer(res):
+    # clean up outdated framebuffers
+    gl.glDeleteFramebuffers(2, fd_renderer.fbs)
+    gl.glDeleteTextures(2, fd_renderer.fb_attachments)
+
+    gl.glDeleteTextures(1, fd_renderer.pg_fb_texture)
+
+    # recreate framebuffers
+    fd_renderer.res = res
+
+    fd_renderer.create_pg_framebuffer()
+    fd_renderer.create_offscreen_framebuffers()
 
 # flags that pygame pass is finished, starting post-processing pass
 def submit():
