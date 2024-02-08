@@ -1,7 +1,7 @@
 import pygame as pg
 import OpenGL.GL as gl
 
-from .fd_render import *
+from src.fd_render import *
 
 # == fd renderer pass library ==
 # a few presets for common (or special) post-processing passes
@@ -52,5 +52,5 @@ def setup_basic_pass(vert, frag):
 
 # PBR bloom pass
 
-# def bloom_frame(rpass, in_tex, out_fb):
-    
+def bloom_frame(rpass, in_tex, out_fb):
+    pass    
