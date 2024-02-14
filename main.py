@@ -37,6 +37,9 @@ e2 = en.create_entity("test e2", {
     "rect_color": (128, 128, 128)
 })
 
+lvl.gen_level(None, 25)
+print(lvl.get_level_buffer())
+
 while True:
     # events
     for e in pg.event.get():
