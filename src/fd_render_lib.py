@@ -2,9 +2,10 @@ import pygame as pg
 import OpenGL.GL as gl
 
 from src.fd_render import *
+import src.fd_camera as cam
 
-# == fd renderer pass library ==
-# a few presets for common (or special) post-processing passes
+# == fd renderer library ==
+# a few presets for common (or special) post-processing passes and renderer systems
 
 # basic pass (blit)
 
@@ -54,3 +55,12 @@ def setup_basic_pass(vert, frag):
 
 def bloom_frame(rpass, in_tex, out_fb):
     pass    
+
+# rect renderer system
+
+def rect_renderer(e, sur):
+    trans = e["transform"]
+    
+    render_area = cam.translate(trans[0], trans[1])
+
+    pg.draw.rect(sur, e["rect_color"], render_area)

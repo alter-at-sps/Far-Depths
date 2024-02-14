@@ -133,7 +133,7 @@ def add_pass(rpass):
     fd_renderer.render_passes.append(rpass)
 
 # call this when the rendering window is resized
-def recreate_renderer(res):
+def recreate_renderer(res, upscale):
     # clean up outdated framebuffers
     gl.glDeleteFramebuffers(2, fd_renderer.fbs)
     gl.glDeleteTextures(2, fd_renderer.fb_attachments)
@@ -141,7 +141,7 @@ def recreate_renderer(res):
     gl.glDeleteTextures(1, fd_renderer.pg_fb_texture)
 
     # recreate framebuffers
-    fd_renderer.res = res
+    fd_renderer.res = (res[0] // upscale, res[1] // upscale)
 
     fd_renderer.create_pg_framebuffer()
     fd_renderer.create_offscreen_framebuffers()

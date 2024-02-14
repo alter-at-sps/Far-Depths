@@ -1,36 +1,39 @@
 import pygame as pg
 import src.fd_render as renderer
-import src.pass_lib as rp
+import src.fd_render_lib as rlib
 
-import src.fd_entity as entity
+import src.fd_entity as en
 import src.fd_camera as cam
+import src.fd_level as lvl
+
+# == Far Depths Main Loop ==
 
 renderer.reset_passes()
 
-renderer.add_pass(rp.setup_basic_pass("src/shaders/fs_trig.vert", "src/shaders/crt_effect.frag"))
-renderer.add_pass(rp.setup_basic_pass("src/shaders/fs_trig.vert", "src/shaders/curve_effect.frag"))
+renderer.add_pass(rlib.setup_basic_pass("src/shaders/fs_trig.vert", "src/shaders/crt_effect.frag"))
+renderer.add_pass(rlib.setup_basic_pass("src/shaders/fs_trig.vert", "src/shaders/curve_effect.frag"))
 
 x = 0
 y = 0
 
-e = entity.create_entity("test e", {
-    "trans": [
+e = en.create_entity("test e", {
+    "transform": [
         (100, 100),
         (50, 50)
     ],
 
-    "renderer": 0,
+    "on_frame": rlib.rect_renderer,
     "rect_color": (255, 255, 0)
 })
 
 
-e2 = entity.create_entity("test e2", {
-    "trans": [
+e2 = en.create_entity("test e2", {
+    "transform": [
         (50, 50),
         (50, 50)
     ],
 
-    "renderer": 0,
+    "on_frame": rlib.rect_renderer,
     "rect_color": (128, 128, 128)
 })
 
@@ -40,7 +43,7 @@ while True:
         if e.type == pg.QUIT:
             quit()
         if e.type == pg.WINDOWRESIZED:
-            renderer.recreate_renderer((e.dict["x"], e.dict["y"]))
+            renderer.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
     
     keys = pg.key.get_pressed()
 
@@ -65,9 +68,11 @@ while True:
         cam.set_camera(pos)
 
     sur = renderer.get_surface()
-
     sur.fill((0, 28, 0))
 
-    entity.render_entities(sur)
+    en.tick()
+
+    en.render_entities(sur)
+    lvl.render_level(sur)
 
     renderer.submit()

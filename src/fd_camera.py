@@ -3,6 +3,7 @@
 camera_translation = [ 0, 0 ]
 
 def set_camera(pos):
+    global camera_translation
     camera_translation = pos
 
 def get_camera():
