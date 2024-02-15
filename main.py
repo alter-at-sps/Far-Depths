@@ -74,6 +74,10 @@ while True:
     sur = renderer.get_surface()
     sur.fill((0, 28, 0))
 
+    pos = cam.get_camera()
+    lvl.unfog_area([ (pos[0] // 20 + 127, pos[1] // 20 + 127) ])
+    lvl.set_pixel((0, 0), 0)
+
     en.tick()
 
     en.render_entities(sur)
