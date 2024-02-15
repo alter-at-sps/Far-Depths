@@ -75,7 +75,11 @@ while True:
     sur.fill((0, 28, 0))
 
     pos = cam.get_camera()
+    
+    lvl.set_pixel_navgrid((pos[0] // 20 + 127, pos[1] // 20 + 127), 1)
     lvl.unfog_area([ (pos[0] // 20 + 127, pos[1] // 20 + 127) ], 36)
+    
+    # temp. trigger redraw
     lvl.set_pixel((0, 0), 0)
 
     en.tick()

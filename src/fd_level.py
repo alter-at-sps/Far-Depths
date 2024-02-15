@@ -23,6 +23,9 @@ level_surface_damaged = True
 # 1 to 6 - out of fog
 level_fow = [] # pg.Surface((level_size[0] * point_size, level_size[1] * point_size))
 
+empty_visibility_blockage = 2
+filled_visibility_blockage = 4
+
 # 0 - unreachable
 # 1 - reachable
 #
@@ -144,6 +147,8 @@ def unfog_area(points, visibility_strenght):
 
     to_check = points
 
+    touched_points = points.copy()
+
     while True:
         new_to_check = []
 
@@ -154,30 +159,34 @@ def unfog_area(points, visibility_strenght):
             
             p1 = inbounds((p[0], p[1] + 1))
 
-            v = get_pixel_fow(p) - (3 if get_pixel(p1) == 0 else 4)
+            v = get_pixel_fow(p) - (empty_visibility_blockage if get_pixel(p1) == 0 else filled_visibility_blockage)
             if get_pixel_fow(p1) < v:
                 new_to_check.append(p1)
+                touched_points.append(p1)
                 set_pixel_fow(p1, v)
 
             p2 = inbounds((p[0], p[1] - 1))
 
-            v = get_pixel_fow(p) - (3 if get_pixel(p2) == 0 else 4)
+            v = get_pixel_fow(p) - (empty_visibility_blockage if get_pixel(p2) == 0 else filled_visibility_blockage)
             if get_pixel_fow(p2) < v:
                 new_to_check.append(p2)
+                touched_points.append(p2)
                 set_pixel_fow(p2, v)
 
             p3 = inbounds((p[0] + 1, p[1]))
 
-            v = get_pixel_fow(p) - (3 if get_pixel(p3) == 0 else 4)
+            v = get_pixel_fow(p) - (empty_visibility_blockage if get_pixel(p3) == 0 else filled_visibility_blockage)
             if get_pixel_fow(p3) < v:
                 new_to_check.append(p3)
+                touched_points.append(p3)
                 set_pixel_fow(p3, v)
 
             p4 = inbounds((p[0] - 1, p[1]))
 
-            v = get_pixel_fow(p) - (3 if get_pixel(p4) == 0 else 4)
+            v = get_pixel_fow(p) - (empty_visibility_blockage if get_pixel(p4) == 0 else filled_visibility_blockage)
             if get_pixel_fow(p4) < v:
                 new_to_check.append(p4)
+                touched_points.append(p4)
                 set_pixel_fow(p4, v)
 
         if len(new_to_check) == 0:
@@ -191,10 +200,7 @@ def unfog_area(points, visibility_strenght):
 
     # finds all points *next* to a reachable point
 
-    if is_valid_navpoint(points[0]): 
-        set_pixel_navgrid(points[0], 1)
-
-    for p in points:
+    for p in touched_points:
         if get_pixel_navgrid(p) == 0:
             continue # flooding *only* from reachable navpoints
 
@@ -258,13 +264,13 @@ def pre_render_level():
 
     for x, collum in enumerate(level):
         for y, point in enumerate(collum):
+            if level_fow[x][y]:
+                pg.draw.rect(level_surface, color_lib[2 % 5], (x * point_size, y * point_size, point_size, point_size))
+
             if point == 1:
                 pg.draw.rect(level_surface, (200, 200, 200), (x * point_size, y * point_size, point_size, point_size))
             elif level_navgrid[x][y] == 1:
                 pg.draw.rect(level_surface, color_lib[0], (x * point_size, y * point_size, point_size, point_size))
-
-            if level_fow[x][y]:
-                pg.draw.rect(level_surface, color_lib[1 % 5], (x * point_size, y * point_size, point_size, point_size))
 
     level_surface_damaged = False
 
