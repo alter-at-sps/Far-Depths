@@ -19,10 +19,9 @@ point_size = 20
 level_surface = pg.Surface((level_size[0] * point_size, level_size[1] * point_size))
 level_surface_damaged = True
 
-# 0 - out of fog
-# 1 to 6 - in fog
+# 0 - fully in fog
+# 1 to 6 - out of fog
 level_fow = [] # pg.Surface((level_size[0] * point_size, level_size[1] * point_size))
-fog_spread = 6
 
 # 0 - unreachable
 # 1 - reachable
@@ -46,7 +45,7 @@ def init_level():
 
         for j in range(level_size[0]):
             collum.append(0)
-            collum_fow.append(6) # max fog
+            collum_fow.append(0) # max fog
             collum_nav.append(0)
 
 # level
@@ -132,13 +131,59 @@ def gen_level(seed, fill_percent):
 # checks if the navpoint would be in a wall or in fog    
 def is_valid_navpoint(p):    
     valid = True if get_pixel(p) == 0 else False
-    # valid &= True if get_pixel_fow(p) < fog_spread else False
+    valid &= True if get_pixel_fow(p) != 0 else False
 
     return valid
 
 # incremental fow and navmesh flood fill (hot func; must be pretty fast)    
-def unfog_area(points):
+def unfog_area(points, visibility_strenght):
     # fow
+
+    for p in points:
+        set_pixel_fow(p, visibility_strenght)
+
+    to_check = points
+
+    while True:
+        new_to_check = []
+
+        for p in to_check:
+            #if get_pixel_fow(p) <= 0:
+            #    set_pixel_fow(p, 0)
+            #    continue
+            
+            p1 = inbounds((p[0], p[1] + 1))
+
+            v = get_pixel_fow(p) - (3 if get_pixel(p1) == 0 else 4)
+            if get_pixel_fow(p1) < v:
+                new_to_check.append(p1)
+                set_pixel_fow(p1, v)
+
+            p2 = inbounds((p[0], p[1] - 1))
+
+            v = get_pixel_fow(p) - (3 if get_pixel(p2) == 0 else 4)
+            if get_pixel_fow(p2) < v:
+                new_to_check.append(p2)
+                set_pixel_fow(p2, v)
+
+            p3 = inbounds((p[0] + 1, p[1]))
+
+            v = get_pixel_fow(p) - (3 if get_pixel(p3) == 0 else 4)
+            if get_pixel_fow(p3) < v:
+                new_to_check.append(p3)
+                set_pixel_fow(p3, v)
+
+            p4 = inbounds((p[0] - 1, p[1]))
+
+            v = get_pixel_fow(p) - (3 if get_pixel(p4) == 0 else 4)
+            if get_pixel_fow(p4) < v:
+                new_to_check.append(p4)
+                set_pixel_fow(p4, v)
+
+        if len(new_to_check) == 0:
+            break
+            
+        to_check = new_to_check
 
     # navgrid
 
@@ -217,6 +262,9 @@ def pre_render_level():
                 pg.draw.rect(level_surface, (200, 200, 200), (x * point_size, y * point_size, point_size, point_size))
             elif level_navgrid[x][y] == 1:
                 pg.draw.rect(level_surface, color_lib[0], (x * point_size, y * point_size, point_size, point_size))
+
+            if level_fow[x][y]:
+                pg.draw.rect(level_surface, color_lib[1 % 5], (x * point_size, y * point_size, point_size, point_size))
 
     level_surface_damaged = False
 
