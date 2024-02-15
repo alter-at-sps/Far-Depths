@@ -8,18 +8,19 @@ import src.fd_camera as cam
 
 # storage
 
-# 0 - undefined
-# negative values - filled (by material type)
-# positive values - empty (room id)
+# 0 - empty
+# positive values - filled (by material type)
 
 level = []
 level_size = (250, 250)
 
-# contains room id to room mappings
-#   used for checking if both point A and B are in the same room (multiple room ids can point to the same room) 
-#   this is important as A* cannot check (in a resonable amount of time) if a path from point A to point B exists
+level_surface = pg.Surface((level_size[0] * 20, level_size[1] * 20))
+level_surface_damaged = True
 
-room_dict = {}
+# 0 - out of fog
+# 1 to 6 - in fog
+
+level_fow = []
 
 def init_level():
     level.clear()
@@ -28,69 +29,31 @@ def init_level():
         collum = []
         level.append(collum)
 
+        collum_fow = []
+        level_fow.append(collum_fow)
+
         for j in range(level_size[0]):
             collum.append(0)
+            collum_fow.append(6) # max fog
 
 def get_pixel(pos):
     return level[pos[0]][pos[1]]
 
+# note: do not hold on to the level buffer reference for more than a frame (could cause missed writes)
 def get_level_buffer():
+    global level_surface_damaged
+    level_surface_damaged = True
     return level
 
 def set_pixel(pos, val):
+    global level_surface_damaged
+    level_surface_damaged = True
     level[pos[0]][pos[1]] = val
 
 # generation
 
 def inbounds(pos):
     return (clamp(pos[0], 0, level_size[0] - 1), clamp(pos[1], 0, level_size[1] - 1))
-
-next_room_id = 1
-def flood_room(pos):
-    global next_room_id
-
-    room_id = next_room_id
-    next_room_id += 1
-
-    # by default each room id is a unique room (until they start merging at play time)
-    room_dict[room_id] = room_id
-
-    to_check = [ pos ]
-
-    while True:
-        new_to_check = []
-
-        for p in to_check:
-            if get_pixel(inbounds((p[0], p[1] + 1))) == 0:
-                new_to_check.append(inbounds((p[0], p[1] + 1)))
-                set_pixel(inbounds((p[0], p[1] + 1)), room_id)
-
-            if get_pixel(inbounds((p[0], p[1] - 1))) == 0:
-                new_to_check.append(inbounds((p[0], p[1] - 1)))
-                set_pixel(inbounds((p[0], p[1] - 1)), room_id)
-
-            if get_pixel(inbounds((p[0] + 1, p[1]))) == 0:
-                new_to_check.append(inbounds((p[0] + 1, p[1])))
-                set_pixel(inbounds((p[0] + 1, p[1])), room_id)
-
-            if get_pixel(inbounds((p[0] - 1, p[1]))) == 0:
-                new_to_check.append(inbounds((p[0] - 1, p[1])))
-                set_pixel(inbounds((p[0] - 1, p[1])), room_id)
-
-        if len(new_to_check) == 0:
-            break
-
-        to_check = new_to_check
-
-
-# floods a newly generated level and precalculates in room ids (used for pathfinding)
-def flood_fill_rooms():
-    for x, collum in enumerate(level):
-        for y, point in enumerate(collum):
-            # 0 means empty but not room indexed yet
-            
-            if point == 0:
-                flood_room((x, y))
 
 def random_fill(seed, fill_percent):
     random.seed(seed)
@@ -127,8 +90,6 @@ def gen_level(seed, fill_percent):
     for i in range(7):
         smooth_level()
 
-    flood_fill_rooms()
-
     # generate deposits
 
 
@@ -140,10 +101,23 @@ color_lib = [
     (255, 128, 0)
 ]
 
-def render_level(sur):
+def pre_render_level():
+    global level_surface_damaged
+
+    level_surface.fill((16, 16, 16))
+
     for y, collum in enumerate(level):
         for x, point in enumerate(collum):
             if point < 0:
-                pg.draw.rect(sur, (200, 200, 200), cam.translate((x * 20, y * 20), (20, 20)))
+                pg.draw.rect(level_surface, (200, 200, 200), (x * 20, y * 20, 20, 20))
             elif point > 0:
-                pg.draw.rect(sur, color_lib[point % 5], cam.translate((x * 20, y * 20), (20, 20)))
+                pg.draw.rect(level_surface, color_lib[point % 5], (x * 20, y * 20, 20, 20))
+
+    level_surface_damaged = False
+
+def render_level(sur):
+    # causes hitching on every pixel change but its good enough
+    if level_surface_damaged:
+        pre_render_level()
+
+    sur.blit(level_surface, cam.translate((0, 0), level_surface.get_size()))

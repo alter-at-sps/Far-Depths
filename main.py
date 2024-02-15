@@ -38,7 +38,8 @@ e2 = en.create_entity("test e2", {
 })
 
 lvl.gen_level(None, 25)
-print(lvl.get_level_buffer())
+
+i = 0
 
 while True:
     # events
