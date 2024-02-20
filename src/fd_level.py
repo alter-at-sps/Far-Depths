@@ -17,7 +17,7 @@ level_size = (250, 250)
 point_size = 20
 
 level_surface = pg.Surface((level_size[0] * point_size, level_size[1] * point_size))
-level_surface_damaged = True
+level_surface_damaged = []
 
 # 0 - fully in fog
 # 1 to 6 - out of fog
@@ -58,13 +58,11 @@ def get_pixel(pos):
 
 # note: do not hold on to the level buffer reference for more than a frame (could cause missed writes)
 def get_level_buffer():
-    global level_surface_damaged
-    level_surface_damaged = True
     return level
 
 def set_pixel(pos, val):
     global level_surface_damaged
-    level_surface_damaged = True
+    level_surface_damaged.append(pos)
     level[pos[0]][pos[1]] = val
 
 # fow
@@ -76,6 +74,8 @@ def get_level_buffer_fow():
     return level
 
 def set_pixel_fow(pos, val):
+    global level_surface_damaged
+    level_surface_damaged.append(pos)
     level_fow[pos[0]][pos[1]] = val
 
 # navgrid
@@ -87,6 +87,8 @@ def get_level_buffer_navgrid():
     return level
 
 def set_pixel_navgrid(pos, val):
+    global level_surface_damaged
+    level_surface_damaged.append(pos)
     level_navgrid[pos[0]][pos[1]] = val
 
 # generation
@@ -260,23 +262,25 @@ color_lib = [
 def pre_render_level():
     global level_surface_damaged
 
-    level_surface.fill((16, 16, 16))
+    # level_surface.fill((16, 16, 16))
 
-    for x, collum in enumerate(level):
-        for y, point in enumerate(collum):
-            if level_fow[x][y]:
-                pg.draw.rect(level_surface, color_lib[2 % 5], (x * point_size, y * point_size, point_size, point_size))
+    for p in level_surface_damaged:
+        x, y = p
+        val = get_pixel(p)
 
-            if point == 1:
-                pg.draw.rect(level_surface, (200, 200, 200), (x * point_size, y * point_size, point_size, point_size))
-            elif level_navgrid[x][y] == 1:
-                pg.draw.rect(level_surface, color_lib[0], (x * point_size, y * point_size, point_size, point_size))
+        if level_fow[x][y]:
+            pg.draw.rect(level_surface, color_lib[2 % 5], (x * point_size, y * point_size, point_size, point_size))
 
-    level_surface_damaged = False
+        if val == 1:
+            pg.draw.rect(level_surface, (200, 200, 200), (x * point_size, y * point_size, point_size, point_size))
+        elif level_navgrid[x][y] == 1:
+            pg.draw.rect(level_surface, color_lib[0], (x * point_size, y * point_size, point_size, point_size))
+
+    level_surface_damaged.clear()
 
 def render_level(sur):
     # causes hitching on every pixel change but its good enough
-    if level_surface_damaged:
+    if not len(level_surface_damaged) == 0:
         pre_render_level()
 
     sur.blit(level_surface, cam.translate((0, 0), level_surface.get_size()))
