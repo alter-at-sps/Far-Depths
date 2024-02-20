@@ -5,6 +5,7 @@ import src.fd_render_lib as rlib
 import src.fd_entity as en
 import src.fd_camera as cam
 import src.fd_level as lvl
+import src.fd_astar as astar
 
 # == Far Depths Main Loop ==
 
@@ -38,6 +39,7 @@ e2 = en.create_entity("test e2", {
 })
 
 lvl.gen_level(None, 25)
+# lvl.init_level()
 
 i = 0
 
@@ -70,6 +72,9 @@ while True:
         pos = cam.get_camera()
         pos[0] += 10
         cam.set_camera(pos)
+
+    if keys[pg.K_e]:
+        print(astar.pathfind((pos[0] // 20 + 127, pos[1] // 20 + 127), (pos[0] // 20 + 127, pos[1] // 20 + 129)))
 
     sur = renderer.get_surface()
     sur.fill((0, 28, 0))
