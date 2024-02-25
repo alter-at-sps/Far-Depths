@@ -11,13 +11,11 @@ def reconstruct_path(closed_list, end_pos):
     
     current_pos = end_pos
 
-    print(len(closed_list))
-
     while True:
         node = closed_list[current_pos]
-        path.append(current_pos)
 
         if not node[2] == None:
+            path.append(current_pos)
             current_pos = node[2]
         else:
             break
@@ -58,7 +56,7 @@ def pathfind(start_point, end_point):
         if current_node == None:
             return None # failed to find a path
         
-        # debug astart vizualiz
+        # debug astar visualizer
         # lvl.set_pixel(current_pos, 1)
         # lvl.render_level(r.get_surface())
         # r.submit()

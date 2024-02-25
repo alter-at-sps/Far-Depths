@@ -1,5 +1,5 @@
 import pygame as pg
-import src.fd_render as renderer
+import src.fd_render as ren
 import src.fd_render_lib as rlib
 
 import src.fd_entity as en
@@ -9,10 +9,10 @@ import src.fd_astar as astar
 
 # == Far Depths Main Loop ==
 
-renderer.reset_passes()
+ren.reset_passes()
 
-renderer.add_pass(rlib.setup_basic_pass("src/shaders/fs_trig.vert", "src/shaders/crt_effect.frag"))
-renderer.add_pass(rlib.setup_basic_pass("src/shaders/fs_trig.vert", "src/shaders/curve_effect.frag"))
+ren.add_pass(rlib.setup_basic_pass("src/shaders/fs_trig.vert", "src/shaders/crt_effect.frag"))
+ren.add_pass(rlib.setup_basic_pass("src/shaders/fs_trig.vert", "src/shaders/curve_effect.frag"))
 
 x = 0
 y = 0
@@ -49,7 +49,7 @@ while True:
         if e.type == pg.QUIT:
             quit()
         if e.type == pg.WINDOWRESIZED:
-            renderer.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
+            ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
     
     keys = pg.key.get_pressed()
 
@@ -76,13 +76,19 @@ while True:
     if keys[pg.K_e]:
         print(astar.pathfind((pos[0] // 20 + 127, pos[1] // 20 + 127), (pos[0] // 20 + 127, pos[1] // 20 + 129)))
 
-    sur = renderer.get_surface()
+    mouse_pos = pg.mouse.get_pos()
+    wm_pos = cam.inverse_translate(mouse_pos)
+    gm_pos = lvl.world_to_grid_space(wm_pos)
+
+    print(wm_pos, gm_pos)
+
+    sur = ren.get_surface()
     sur.fill((0, 28, 0))
 
     pos = cam.get_camera()
     
-    lvl.set_pixel_navgrid((pos[0] // 20 + 127, pos[1] // 20 + 127), 1)
-    lvl.unfog_area([ (pos[0] // 20 + 127, pos[1] // 20 + 127) ], 36)
+    lvl.set_pixel_navgrid(gm_pos, 1)
+    lvl.unfog_area([ gm_pos ], 36)
     
     # temp. trigger redraw
     lvl.set_pixel((0, 0), 0)
@@ -92,4 +98,4 @@ while True:
     en.render_entities(sur)
     lvl.render_level(sur)
 
-    renderer.submit()
+    ren.submit()

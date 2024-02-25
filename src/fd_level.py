@@ -4,7 +4,7 @@ from pygame.math import clamp
 
 import src.fd_camera as cam
 
-# == Far Depths Level Storage, Generator and Pathfinder ==
+# == Far Depths Level Storage and Generator ==
 
 # storage
 
@@ -12,16 +12,20 @@ import src.fd_camera as cam
 # positive values - filled (by material type)
 
 level = []
-level_size = (250, 250)
+level_size = (500, 500)
 
-point_size = 20
+point_size = 2
 
 level_surface = pg.Surface((level_size[0] * point_size, level_size[1] * point_size))
 level_surface_damaged = []
 
+empty_color = (16, 16, 16)
+
+level_surface.fill(empty_color)
+
 # 0 - fully in fog
 # 1 to 6 - out of fog
-level_fow = [] # pg.Surface((level_size[0] * point_size, level_size[1] * point_size))
+level_fow = []
 
 empty_visibility_blockage = 2
 filled_visibility_blockage = 4
@@ -129,6 +133,7 @@ def gen_level(seed, fill_percent):
     random_fill(seed, fill_percent)
 
     for i in range(7):
+        print("pass: ", i)
         smooth_level()
 
     # generate deposits
@@ -251,6 +256,9 @@ def unfog_area(points, visibility_strenght):
 
         to_check = new_to_check
 
+def world_to_grid_space(pos):
+    return ((pos[0] + level_surface.get_width() // 2) // point_size, (pos[1] + level_surface.get_height() // 2) // point_size)
+
 color_lib = [
     (102, 255, 255),
     (255, 0, 0),
@@ -279,7 +287,6 @@ def pre_render_level():
     level_surface_damaged.clear()
 
 def render_level(sur):
-    # causes hitching on every pixel change but its good enough
     if not len(level_surface_damaged) == 0:
         pre_render_level()
 
