@@ -14,7 +14,7 @@ import src.fd_camera as cam
 level = []
 level_size = (500, 500)
 
-point_size = 2
+point_size = 20
 
 level_surface = pg.Surface((level_size[0] * point_size, level_size[1] * point_size))
 level_surface_damaged = []
@@ -256,8 +256,17 @@ def unfog_area(points, visibility_strenght):
 
         to_check = new_to_check
 
+def set_circle(pos, radius_squared, val):
+    for x in range(pos[0] - radius_squared, pos[1] + radius_squared):
+        for y in range(pos[0] - radius_squared, pos[1] + radius_squared):
+            if (pos[0] - x) ** 2 + (pos[1] - y) ** 2 < radius_squared:
+                set_pixel((x, y), val)
+
 def world_to_grid_space(pos):
     return ((pos[0] + level_surface.get_width() // 2) // point_size, (pos[1] + level_surface.get_height() // 2) // point_size)
+
+def grid_to_world_space(pos):
+    return (pos[0] * point_size - level_surface.get_width() // 2, pos[1]  * point_size - level_surface.get_height() // 2)
 
 color_lib = [
     (102, 255, 255),

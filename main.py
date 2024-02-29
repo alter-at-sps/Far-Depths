@@ -6,8 +6,9 @@ import src.fd_entity as en
 import src.fd_camera as cam
 import src.fd_level as lvl
 import src.fd_astar as astar
+import src.fd_manager as mgr
 
-# == Far Depths Main Loop ==
+# == Far Depths Bootstraper ==
 
 ren.reset_passes()
 
@@ -27,6 +28,13 @@ e = en.create_entity("test e", {
     "rect_color": (255, 255, 0)
 })
 
+def update_pos(e):
+    trans = e["transform"]
+
+    mouse_pos = pg.mouse.get_pos()
+    wm_pos = cam.inverse_translate(mouse_pos)
+
+    trans[0] = wm_pos
 
 e2 = en.create_entity("test e2", {
     "transform": [
@@ -35,13 +43,19 @@ e2 = en.create_entity("test e2", {
     ],
 
     "on_frame": rlib.rect_renderer,
-    "rect_color": (128, 128, 128)
+    "rect_color": (128, 128, 128),
+
+    "tick": update_pos
 })
 
-lvl.gen_level(None, 25)
+# lvl.gen_level(None, 25)
 # lvl.init_level()
 
 i = 0
+
+mgr.in_game_loop()
+
+exit()
 
 while True:
     # events
@@ -89,13 +103,10 @@ while True:
     
     lvl.set_pixel_navgrid(gm_pos, 1)
     lvl.unfog_area([ gm_pos ], 36)
-    
-    # temp. trigger redraw
-    lvl.set_pixel((0, 0), 0)
 
     en.tick()
 
-    en.render_entities(sur)
     lvl.render_level(sur)
+    en.render_entities(sur)
 
     ren.submit()
