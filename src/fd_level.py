@@ -211,21 +211,25 @@ def unfog_area(points, visibility_strenght):
         if get_pixel_navgrid(p) == 0:
             continue # flooding *only* from reachable navpoints
 
-        if is_valid_navpoint(p) and get_pixel_navgrid(inbounds((p[0], p[1] + 1))) == 0:
-            edge_points.append(inbounds((p[0], p[1] + 1)))
-            set_pixel_navgrid(inbounds((p[0], p[1] + 1)), 1)
+        p1 = inbounds((p[0], p[1] + 1))
+        if is_valid_navpoint(p1) and get_pixel_navgrid(p1) == 0:
+            edge_points.append(p1)
+            set_pixel_navgrid(p1, 1)
 
-        if is_valid_navpoint(p) and get_pixel_navgrid(inbounds((p[0], p[1] - 1))) == 0:
-            edge_points.append(inbounds((p[0], p[1] - 1)))
-            set_pixel_navgrid(inbounds((p[0], p[1] - 1)), 1)
+        p2 = inbounds((p[0], p[1] - 1))
+        if is_valid_navpoint(p2) and get_pixel_navgrid(p2) == 0:
+            edge_points.append(p2)
+            set_pixel_navgrid(p2, 1)
 
-        if is_valid_navpoint(p) and get_pixel_navgrid(inbounds((p[0] + 1, p[1]))) == 0:
-            edge_points.append(inbounds((p[0] + 1, p[1])))
-            set_pixel_navgrid(inbounds((p[0] + 1, p[1])), 1)
+        p3 = inbounds((p[0] + 1, p[1]))
+        if is_valid_navpoint(p3) and get_pixel_navgrid(p3) == 0:
+            edge_points.append(p3)
+            set_pixel_navgrid(p3, 1)
 
-        if is_valid_navpoint(p) and get_pixel_navgrid(inbounds((p[0] - 1, p[1]))) == 0:
-            edge_points.append(inbounds((p[0] - 1, p[1])))
-            set_pixel_navgrid(inbounds((p[0] - 1, p[1])), 1)
+        p4 = inbounds((p[0] - 1, p[1]))
+        if is_valid_navpoint(p4) and get_pixel_navgrid(p4) == 0:
+            edge_points.append(p4)
+            set_pixel_navgrid(p4, 1)
 
     # flood fill from edge_points
             
@@ -235,21 +239,25 @@ def unfog_area(points, visibility_strenght):
         new_to_check = []
 
         for p in to_check:
-            if is_valid_navpoint(p) and get_pixel_navgrid(inbounds((p[0], p[1] + 1))) == 0:
-                new_to_check.append(inbounds((p[0], p[1] + 1)))
-                set_pixel_navgrid(inbounds((p[0], p[1] + 1)), 1)
+            p1 = inbounds((p[0], p[1] + 1))
+            if is_valid_navpoint(p1) and get_pixel_navgrid(p1) == 0:
+                new_to_check.append(p1)
+                set_pixel_navgrid(p1, 1)
 
-            if is_valid_navpoint(p) and get_pixel_navgrid(inbounds((p[0], p[1] - 1))) == 0:
-                new_to_check.append(inbounds((p[0], p[1] - 1)))
-                set_pixel_navgrid(inbounds((p[0], p[1] - 1)), 1)
+            p2 = inbounds((p[0], p[1] - 1))
+            if is_valid_navpoint(p2) and get_pixel_navgrid(p2) == 0:
+                new_to_check.append(p2)
+                set_pixel_navgrid(p2, 1)
 
-            if is_valid_navpoint(p) and get_pixel_navgrid(inbounds((p[0] + 1, p[1]))) == 0:
-                new_to_check.append(inbounds((p[0] + 1, p[1])))
-                set_pixel_navgrid(inbounds((p[0] + 1, p[1])), 1)
+            p3 = inbounds((p[0] + 1, p[1]))
+            if is_valid_navpoint(p3) and get_pixel_navgrid(p3) == 0:
+                new_to_check.append(p3)
+                set_pixel_navgrid(p3, 1)
 
-            if is_valid_navpoint(p) and get_pixel_navgrid(inbounds((p[0] - 1, p[1]))) == 0:
-                new_to_check.append(inbounds((p[0] - 1, p[1])))
-                set_pixel_navgrid(inbounds((p[0] - 1, p[1])), 1)
+            p4 = inbounds((p[0] - 1, p[1]))
+            if is_valid_navpoint(p4) and get_pixel_navgrid(p4) == 0:
+                new_to_check.append(p4)
+                set_pixel_navgrid(p4, 1)
 
         if len(new_to_check) == 0:
             break
