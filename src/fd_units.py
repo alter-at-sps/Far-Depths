@@ -68,13 +68,6 @@ def unit_tick(e: dict):
     path = e.get("current_path")
 
     if not path == None:
-        next_pos = path.pop(0)
-        e["grid_trans"] = next_pos
-
-        lvl.unfog_area([ next_pos ], 10)
-
-        e["busy_with"] = [1, move_time]
-
         if len(path) == 0:
             e.pop("current_path")
 
@@ -99,4 +92,11 @@ def unit_tick(e: dict):
 
                 e["busy_with"] = [0, mine_times[0], target]
                 e.pop("path_target_mine")
+        else:
+            next_pos = path.pop(0)
+            e["grid_trans"] = next_pos
+
+            lvl.unfog_area([ next_pos ], 10)
+
+            e["busy_with"] = [1, move_time]
             

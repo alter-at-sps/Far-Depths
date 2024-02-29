@@ -3,6 +3,10 @@ import pygame as pg
 from pygame.math import clamp
 
 import src.fd_camera as cam
+import src.fd_entity as en
+
+import src.fd_render as ren
+import src.fd_render_lib as rlib
 
 # == Far Depths Level Storage and Generator ==
 
@@ -19,9 +23,7 @@ point_size = 20
 level_surface = pg.Surface((level_size[0] * point_size, level_size[1] * point_size))
 level_surface_damaged = []
 
-empty_color = (16, 16, 16)
-
-level_surface.fill(empty_color)
+level_surface.fill(rlib.empty_color)
 
 # 0 - fully in fog
 # 1 to 6 - out of fog
@@ -128,15 +130,53 @@ def smooth_level():
 def gen_level(seed, fill_percent):
     init_level()
 
+    # setup loading screen scene
+    status = en.create_entity("loading_status", {
+        "ui_trans": [
+            (0, 0),
+            (350, 80)
+        ],
+
+        "on_frame": rlib.loading_status_renderer,
+
+        # status components
+
+        "status_text": None,
+    })
+
     # generate level structure
+
+    status["status_text"] = "Undocking..."
+    
+    ren.get_surface().fill(rlib.empty_color)
+    en.render_entities(ren.get_surface())
+    ren.submit()
 
     random_fill(seed, fill_percent)
 
     for i in range(7):
-        print("pass: ", i)
+        status["status_text"] = f"Arriving at location... ({i + 1}/{7})"
+
+        ren.get_surface().fill(rlib.empty_color)
+        en.render_entities(ren.get_surface())
+        ren.submit()
+
         smooth_level()
 
     # generate deposits
+        
+    # pre render level
+        
+    status["status_text"] = "Get ready for touchdown!"
+
+    ren.get_surface().fill(rlib.empty_color)
+    en.render_entities(ren.get_surface())
+    ren.submit()
+
+    pre_render_level()
+
+    # clear loading screen scene
+    en.reset()
 
 # checks if the navpoint would be in a wall or in fog    
 def is_valid_navpoint(p):    

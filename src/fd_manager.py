@@ -58,7 +58,7 @@ def in_game_loop():
         # events
         for e in pg.event.get():
             if e.type == pg.QUIT:
-                quit()
+                return
             if e.type == pg.WINDOWRESIZED:
                 ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
 
@@ -72,6 +72,8 @@ def in_game_loop():
             en.get_entity("unit_0")["current_path"] = astar.pathfind(en.get_entity("unit_0")["grid_trans"], gm_pos)
 
         en.tick()
+
+        cam.set_camera(en.get_entity("unit_0")["transform"][0])
 
         sur = ren.get_surface()
 

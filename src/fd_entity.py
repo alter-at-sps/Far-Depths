@@ -27,6 +27,9 @@ def call_system(s_name, *args):
                 print(f"An Exception occured while system \"{s_name}\" was working with entity \"{name}\"!")
                 raise
 
+def reset():
+    entity_registry.clear()
+
 # common system
 
 def render_entities(surface):

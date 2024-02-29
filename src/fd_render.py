@@ -1,4 +1,5 @@
 import pygame as pg
+import pygame.freetype as freetype
 import OpenGL.GL as gl
 
 # == Far Depths renderer ==

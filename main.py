@@ -18,36 +18,6 @@ ren.add_pass(rlib.setup_basic_pass("src/shaders/fs_trig.vert", "src/shaders/curv
 x = 0
 y = 0
 
-e = en.create_entity("test e", {
-    "transform": [
-        (100, 100),
-        (50, 50)
-    ],
-
-    "on_frame": rlib.rect_renderer,
-    "rect_color": (255, 255, 0)
-})
-
-def update_pos(e):
-    trans = e["transform"]
-
-    mouse_pos = pg.mouse.get_pos()
-    wm_pos = cam.inverse_translate(mouse_pos)
-
-    trans[0] = wm_pos
-
-e2 = en.create_entity("test e2", {
-    "transform": [
-        (50, 50),
-        (50, 50)
-    ],
-
-    "on_frame": rlib.rect_renderer,
-    "rect_color": (128, 128, 128),
-
-    "tick": update_pos
-})
-
 # lvl.gen_level(None, 25)
 # lvl.init_level()
 
