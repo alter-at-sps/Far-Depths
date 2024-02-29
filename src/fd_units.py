@@ -96,7 +96,7 @@ def unit_tick(e: dict):
             next_pos = path.pop(0)
             e["grid_trans"] = next_pos
 
-            lvl.unfog_area([ next_pos ], 10)
+            lvl.unfog_area([ next_pos ], 24)
 
             e["busy_with"] = [1, move_time]
             

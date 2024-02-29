@@ -21,12 +21,14 @@ level_size = (500, 500)
 point_size = 20
 
 level_surface = pg.Surface((level_size[0] * point_size, level_size[1] * point_size))
+level_fow_surface = pg.Surface((level_size[0] * point_size, level_size[1] * point_size), flags=pg.SRCALPHA)
 level_surface_damaged = []
 
 level_surface.fill(rlib.empty_color)
+level_fow_surface.fill(rlib.fog_color)
 
 # 0 - fully in fog
-# 1 to 6 - out of fog
+# 1 to 18 - out of fog
 level_fow = []
 
 empty_visibility_blockage = 2
@@ -155,7 +157,13 @@ def gen_level(seed, fill_percent):
     random_fill(seed, fill_percent)
 
     for i in range(7):
-        status["status_text"] = f"Arriving at location... ({i + 1}/{7})"
+        status["status_text"] = f"Arriving at location... ({i + 1}/7)"
+
+        # minimal event loop
+        for e in pg.event.get():
+            if e.type == pg.WINDOWRESIZED:
+                ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
+
 
         ren.get_surface().fill(rlib.empty_color)
         en.render_entities(ren.get_surface())
@@ -333,13 +341,11 @@ def pre_render_level():
         x, y = p
         val = get_pixel(p)
 
-        if level_fow[x][y]:
-            pg.draw.rect(level_surface, color_lib[2 % 5], (x * point_size, y * point_size, point_size, point_size))
+        pg.draw.rect(level_fow_surface, pg.Color(*rlib.fog_color, int((18 - min(level_fow[x][y], 18)) * (255 / 18))), (x * point_size, y * point_size, point_size, point_size))
 
-        if val == 1:
-            pg.draw.rect(level_surface, (200, 200, 200), (x * point_size, y * point_size, point_size, point_size))
-        elif level_navgrid[x][y] == 1:
-            pg.draw.rect(level_surface, color_lib[0], (x * point_size, y * point_size, point_size, point_size))
+        pg.draw.rect(level_surface, (200, 200, 200) if val == 1 else rlib.empty_color, (x * point_size, y * point_size, point_size, point_size))
+        # elif level_navgrid[x][y] == 1:
+            # pg.draw.rect(level_surface, color_lib[0], (x * point_size, y * point_size, point_size, point_size))
 
     level_surface_damaged.clear()
 
@@ -348,3 +354,4 @@ def render_level(sur):
         pre_render_level()
 
     sur.blit(level_surface, cam.translate((0, 0), level_surface.get_size()))
+    sur.blit(level_fow_surface, cam.translate((0, 0), level_fow_surface.get_size()), special_flags=pg.BLEND_ALPHA_SDL2)

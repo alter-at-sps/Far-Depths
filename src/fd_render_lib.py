@@ -8,7 +8,8 @@ import src.fd_camera as cam
 # == fd renderer library ==
 # a few presets for common (or special) post-processing passes and renderer systems
 
-empty_color = (16, 16, 16)
+empty_color = (8, 8, 8)
+fog_color = (16, 16, 16)
 
 # basic pass (blit)
 

@@ -32,7 +32,7 @@ def in_game_loop():
 
     lvl.set_circle(base_grid_pos, 100, 0) # clear spawn location
     lvl.set_pixel_navgrid(base_grid_pos, 1) # initial navgrid origin
-    lvl.unfog_area([ base_grid_pos ], 32) # initial unfoged area
+    lvl.unfog_area([ base_grid_pos ], 64) # initial unfoged area
 
     for i, unit in enumerate([ (247, 250) ]):#[ (0, -1), (1, -1), (-1, 0), (-1, 1) ]):
         en.create_entity(f"unit_{i}", {
