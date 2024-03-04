@@ -23,7 +23,8 @@ def reconstruct_path(closed_list, end_pos):
     path.reverse()
     return path
 
-def pathfind(start_point, end_point):
+# end_exclusive = won't include the end position, will just to end up next to the end position (at most distance = 1)
+def pathfind(start_point, end_point, end_exclusive = False):
     open_list = {}
     closed_list = {}
 
@@ -68,6 +69,9 @@ def pathfind(start_point, end_point):
 
         if current_pos == end_point:
             return reconstruct_path(closed_list, current_pos)
+
+        if end_exclusive and abs(current_pos[0] - end_point[0]) + abs(current_pos[1] - end_point[1]) <= 1:
+             return reconstruct_path(closed_list, current_pos)
 
         # check adjacent points
 

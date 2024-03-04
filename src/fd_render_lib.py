@@ -71,15 +71,15 @@ def rect_renderer(e, sur):
 
 # loading screen status renderer
 
-font = freetype.Font("./assets/font/amiga4ever pro.ttf", 10)
+font = freetype.Font("./assets/font/amiga4ever pro2.ttf", 10)
 
 loading_color = (255, 255, 255)
 loading_box_width = 10
 loading_status_offset = 15
 
 def loading_status_renderer(e, sur):
-    pg.draw.rect(sur, loading_color, (cam.translate_screenspace(e["ui_trans"][0], e["ui_trans"][1])))
-    pg.draw.rect(sur, empty_color, (cam.translate_screenspace(e["ui_trans"][0], (e["ui_trans"][1][0] - loading_box_width * 2, e["ui_trans"][1][1] - loading_box_width * 2))))
+    # pg.draw.rect(sur, loading_color, (cam.translate_screenspace(e["ui_trans"][0], e["ui_trans"][1])))
+    # pg.draw.rect(sur, empty_color, (cam.translate_screenspace(e["ui_trans"][0], (e["ui_trans"][1][0] - loading_box_width * 2, e["ui_trans"][1][1] - loading_box_width * 2))))
 
     # rect = font.get_rect(e["status_text"])
     # e["ui_trans"][1] = (rect[2], rect[3])

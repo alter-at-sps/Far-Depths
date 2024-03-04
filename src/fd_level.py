@@ -148,7 +148,7 @@ def gen_level(seed, fill_percent):
 
     # generate level structure
 
-    status["status_text"] = "Undocking..."
+    status["status_text"] = "> Undocking..."
     
     ren.get_surface().fill(rlib.empty_color)
     en.render_entities(ren.get_surface())
@@ -157,10 +157,12 @@ def gen_level(seed, fill_percent):
     random_fill(seed, fill_percent)
 
     for i in range(7):
-        status["status_text"] = f"Arriving at location... ({i + 1}/7)"
+        status["status_text"] = f"> Arriving at location... ({i + 1}/7)"
 
         # minimal event loop
         for e in pg.event.get():
+            if e.type == pg.QUIT:
+                quit()
             if e.type == pg.WINDOWRESIZED:
                 ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
 
@@ -175,7 +177,7 @@ def gen_level(seed, fill_percent):
         
     # pre render level
         
-    status["status_text"] = "Get ready for touchdown!"
+    status["status_text"] = "> Searching for a landing location..."
 
     ren.get_surface().fill(rlib.empty_color)
     en.render_entities(ren.get_surface())
@@ -184,6 +186,7 @@ def gen_level(seed, fill_percent):
     pre_render_level()
 
     # clear loading screen scene
+
     en.reset()
 
 # checks if the navpoint would be in a wall or in fog    

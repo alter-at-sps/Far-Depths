@@ -52,7 +52,13 @@ def in_game_loop():
 
             "unit_index": i,
             "stored_materials": [],
+
+            "task_queue": [],
+            "mining_queue": set()
         })
+
+    is_dragging = False
+    drag_start_pos = None
 
     while True:
         # events
@@ -62,6 +68,8 @@ def in_game_loop():
             if e.type == pg.WINDOWRESIZED:
                 ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
 
+        # user input processing
+
         keys = pg.key.get_pressed()
 
         if keys[pg.K_e]:
@@ -69,16 +77,61 @@ def in_game_loop():
             wm_pos = cam.inverse_translate(mouse_pos)
             gm_pos = lvl.world_to_grid_space(wm_pos)
 
-            en.get_entity("unit_0")["current_path"] = astar.pathfind(en.get_entity("unit_0")["grid_trans"], gm_pos)
+            un.add_move_task(en.get_entity("unit_0"), gm_pos, True)
+
+        is_shift = keys[pg.K_LSHIFT]
+
+        # drag processing
+
+        # not None if currently dragging
+        drag_area = None
+
+        # not None if finished dragging this frame
+        final_drag_area = None
+
+        if not is_dragging and pg.mouse.get_pressed()[0]:
+            # started dragging
+
+            is_dragging = True
+
+            drag_start_pos = pg.mouse.get_pos()
+
+        elif is_dragging and not pg.mouse.get_pressed()[0]:
+            # stopped dragging
+
+            is_dragging = False
+
+            final_drag_area = ((min(drag_start_pos[0], pg.mouse.get_pos()[0]), min(drag_start_pos[1], pg.mouse.get_pos()[1])), (max(drag_start_pos[0], pg.mouse.get_pos()[0]), max(drag_start_pos[1], pg.mouse.get_pos()[1])))
+            drag_start_pos = None
+
+        if is_dragging:
+            drag_area = ((min(drag_start_pos[0], pg.mouse.get_pos()[0]), min(drag_start_pos[1], pg.mouse.get_pos()[1])), (max(drag_start_pos[0], pg.mouse.get_pos()[0]), max(drag_start_pos[1], pg.mouse.get_pos()[1])))
+
+        # mark area for mining
+        if not final_drag_area == None:
+            w_drag_area = (cam.inverse_translate(final_drag_area[0]), cam.inverse_translate(final_drag_area[1]))
+            g_drag_area = (lvl.world_to_grid_space(w_drag_area[0]), lvl.world_to_grid_space(w_drag_area[1]))
+
+            mining_queue = un.create_mining_queue(g_drag_area)
+
+            # lvl.set_pixels_for_mining(mining_queue)
+            un.add_mining_task(en.get_entity("unit_0"), mining_queue, is_shift)
+
+        # main game update
 
         en.tick()
 
         cam.set_camera(en.get_entity("unit_0")["transform"][0])
 
+        # render frame
+
         sur = ren.get_surface()
 
         lvl.render_level(sur)
         en.render_entities(sur)
+
+        if not drag_area == None:
+            pg.draw.rect(sur, (64, 255, 64), (drag_area[0][0], drag_area[0][1], drag_area[1][0] - drag_area[0][0], drag_area[1][1] - drag_area[0][1]))
 
         ren.submit()
 
