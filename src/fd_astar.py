@@ -35,8 +35,20 @@ def pathfind(start_point, end_point, end_exclusive = False):
     )
 
     # check if outside of navgrid (to prevent a loong astar search with no path found)
-    if lvl.get_pixel_navgrid(start_point) == 0 or lvl.get_pixel_navgrid(end_point) == 0:
+    if not end_exclusive and (lvl.get_pixel_navgrid(start_point) == 0 or lvl.get_pixel_navgrid(end_point) == 0):
         return None
+    
+    # check if at least one neighboring point is accessible
+    elif end_exclusive:
+        found_point = False
+
+        for offset in [ (1, 0), (0, 1), (-1, 0), (0, -1) ]:
+            if lvl.get_pixel_navgrid((end_point[0] + offset[0], end_point[1] + offset[1])) == 1:
+                found_point = True
+                break
+        
+        if not found_point:
+            return None
 
     while not len(open_list) == 0:
         # find best next point

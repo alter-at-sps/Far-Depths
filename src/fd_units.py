@@ -14,18 +14,54 @@ def create_mining_queue(drag_area):
         for y in range(drag_area[0][1], drag_area[1][1] + 1):
             if not lvl.get_pixel((x, y)) == 0:
                 queue.add((x, y))
+                lvl.offset_by_pixel_mark((x, y), 1)
 
     return queue
 
+def revert_mining_queue(queue):
+    for p in queue:
+        lvl.offset_by_pixel_mark(p, -1)
+    
+    queue.clear()
+
+def clear_unit_tasks(e):
+    for task in e["task_queue"]:
+        if task[0] == 0: # queued mining task
+            for p in task[1]:
+                lvl.offset_by_pixel_mark(p, -1)
+        elif task[0] == 1: # move task
+            pass
+        else:
+            raise ValueError("invalid task type on clear_unit")
+
+    e["task_queue"].clear()
+    e.pop("current_path", None)
+    revert_mining_queue(e["mining_queue"])
+    interupt_busy_unit(e)
+
+def interupt_busy_unit(e):
+    task = e.pop("busy_with", None)
+
+    if not task == None:
+        if task[0] == 0: # stop mining task
+            currently_being_mined_global.remove(task[2])
+            # lvl.offset_by_pixel_mark(task[2], -1)
+
+        elif task[0] == 1: # continue movment cooldown
+            pass
+
+        else: 
+            raise ValueError("invalid task type on busy_interupt")
+
 def add_mining_task(e, mining_queue, append_task):
     if not append_task:
-        e["task_queue"].clear()
+        clear_unit_tasks(e)
 
     e["task_queue"].append((0, mining_queue))
 
 def add_move_task(e, target_point, append_task):
     if not append_task:
-        e["task_queue"].clear()
+        clear_unit_tasks(e)
 
     e["task_queue"].append((1, target_point))
 
@@ -40,6 +76,10 @@ def set_next_to_mine(e, finished_point, mining_queue: set):
     for p in [ (1, 0), (0, 1), (-1, 0), (0, -1) ]:
         p = ((finished_point[0] + p[0], finished_point[1] + p[1]))
 
+        # check if not mined by other units in the meantime
+        if lvl.get_pixel(p) == 0 or p in currently_being_mined_global:
+            continue
+
         if p in mining_queue:
             e["current_path"] = [ finished_point ]
             e["path_target_mine"] = p
@@ -53,6 +93,11 @@ def set_next_to_mine(e, finished_point, mining_queue: set):
     current_point = e["grid_trans"]
 
     for p in mining_queue:
+        # check if not mined by other units in the meantime
+        if lvl.get_pixel(p) == 0 or p in currently_being_mined_global:
+            mining_queue.remove(p)
+            continue
+
         path = astar.pathfind(current_point, p, True)
 
         if not path == None:
@@ -67,6 +112,8 @@ def set_next_to_mine(e, finished_point, mining_queue: set):
 
     nls.push_error(f"unit {e['unit_index']}", "Failed to find path to continue mining, stopping!")
 
+    revert_mining_queue(e["mining_queue"])
+
 # transfer subroutines
 
 def add_to_base(mats):
@@ -77,12 +124,19 @@ def add_to_sub(sub_index, mats):
 
     print("add_to_sub TODO")
 
+# mine_times = [
+#     2,
+#     5
+# ]
+
+# move_time = .2
+    
 mine_times = [
-    2,
+    .02,
     5
 ]
 
-move_time = .2
+move_time = .005
 
 t = time.time()
 
@@ -94,6 +148,8 @@ def unit_tick(e: dict):
     pos = lvl.grid_to_world_space(e["grid_trans"])
 
     e["transform"][0] = (pos[0] + lvl.point_size // 2, pos[1] + lvl.point_size // 2)
+
+    nls_sender = f"unit {e['unit_index']}"
 
     delta_t = time.time() - t
     t = time.time()
@@ -116,6 +172,7 @@ def unit_tick(e: dict):
 
                 lvl.set_pixel(task[2], 0) # mine out pixel
                 lvl.set_pixel_navgrid(task[2], 1) # expand navgrid
+                lvl.set_pixel_mark(task[2], 0) # remove mining overlay
 
                 currently_being_mined_global.remove(task[2])
 
@@ -182,15 +239,24 @@ def unit_tick(e: dict):
 
         if task[0] == 0: # mining task
             e["mining_queue"] = task[1]
+
+            nls.push_info(nls_sender, f"Starting a mining operation of {len(task[1])} blocks.")
+
             set_next_to_mine(e, e["grid_trans"], task[1])
                 
         elif task[0] == 1: # move task
             path = astar.pathfind(e["grid_trans"], task[1])
 
             if not path == None:
-                e["current_path"] = path
+                if not len(path) == 0:
+                    e["current_path"] = path
+
+                    nls.push_info(nls_sender, f"Moving to position {path[-1]}.")
             else:
-                nls.push_error(f"unit {e['unit_index']}", "Failed to move to the requested position, stopping!")
+                nls.push_error(nls_sender, "Failed to move to the requested position, stopping!")
 
         else:
             raise ValueError("invalid task type on task_setup")
+    elif e.get("busy_with") == None and len(task_queue) == 0:
+        # nls.push_warn(nls_sender, "Finished all tasks in my queue, idling...") 
+        pass

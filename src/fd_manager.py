@@ -51,7 +51,11 @@ def in_game_loop():
             # unit components
 
             "unit_index": i,
-            "stored_materials": [],
+            "stored_materials": [
+                0, # rock
+                0, # oxy
+                0, # goal
+            ],
 
             "task_queue": [],
             "mining_queue": set()
@@ -77,7 +81,15 @@ def in_game_loop():
             wm_pos = cam.inverse_translate(mouse_pos)
             gm_pos = lvl.world_to_grid_space(wm_pos)
 
-            un.add_move_task(en.get_entity("unit_0"), gm_pos, True)
+            un.add_move_task(en.get_entity("unit_0"), gm_pos, is_shift)
+
+        if pg.mouse.get_pressed()[1]:
+            mouse_pos = pg.mouse.get_pos()
+            wm_pos = cam.inverse_translate(mouse_pos)
+            gm_pos = lvl.world_to_grid_space(wm_pos)
+
+            lvl.set_pixel(gm_pos, 1)
+            lvl.set_pixel_navgrid(gm_pos, 0)
 
         is_shift = keys[pg.K_LSHIFT]
 

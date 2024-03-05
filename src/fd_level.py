@@ -19,6 +19,7 @@ level = []
 level_size = (500, 500)
 
 point_size = 20
+mark_margin = 5
 
 level_surface = pg.Surface((level_size[0] * point_size, level_size[1] * point_size))
 level_fow_surface = pg.Surface((level_size[0] * point_size, level_size[1] * point_size), flags=pg.SRCALPHA)
@@ -41,6 +42,12 @@ filled_visibility_blockage = 4
 # is si nesessary because A* can't (in reasonable amount of time) determine if end point is disconected from the navgrid 
 level_navgrid = []
 
+# 0 - unmarked
+# > 0 - maked by that number of units
+# 
+# overlay for player to see what blocks are marked for mining
+level_mark = []
+
 def init_level():
     level.clear()
 
@@ -54,10 +61,14 @@ def init_level():
         collum_nav = []
         level_navgrid.append(collum_nav)
 
+        collum_mark = []
+        level_mark.append(collum_mark)
+
         for j in range(level_size[0]):
             collum.append(0)
             collum_fow.append(0) # max fog
             collum_nav.append(0)
+            collum_mark.append(0)
 
 # level
 
@@ -95,9 +106,27 @@ def get_level_buffer_navgrid():
     return level
 
 def set_pixel_navgrid(pos, val):
+    # global level_surface_damaged
+    # level_surface_damaged.append(pos)
+    level_navgrid[pos[0]][pos[1]] = val
+
+# mark
+
+def get_pixel_mark(pos):
+    return level_mark[pos[0]][pos[1]]
+
+def get_level_buffer_mark():
+    return level
+
+def set_pixel_mark(pos, val):
     global level_surface_damaged
     level_surface_damaged.append(pos)
-    level_navgrid[pos[0]][pos[1]] = val
+    level_mark[pos[0]][pos[1]] = val
+
+def offset_by_pixel_mark(pos, val):
+    global level_surface_damaged
+    level_surface_damaged.append(pos)
+    level_mark[pos[0]][pos[1]] += val
 
 # generation
 
@@ -347,6 +376,10 @@ def pre_render_level():
         pg.draw.rect(level_fow_surface, pg.Color(*rlib.fog_color, int((18 - min(level_fow[x][y], 18)) * (255 / 18))), (x * point_size, y * point_size, point_size, point_size))
 
         pg.draw.rect(level_surface, (200, 200, 200) if val == 1 else rlib.empty_color, (x * point_size, y * point_size, point_size, point_size))
+
+        if level_mark[x][y] > 0:
+            pg.draw.rect(level_surface, color_lib[1], (x * point_size + mark_margin, y * point_size + mark_margin, point_size - mark_margin * 2, point_size - mark_margin * 2))
+
         # elif level_navgrid[x][y] == 1:
             # pg.draw.rect(level_surface, color_lib[0], (x * point_size, y * point_size, point_size, point_size))
 
