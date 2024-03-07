@@ -35,7 +35,17 @@ def clear_unit_tasks(e):
             raise ValueError("invalid task type on clear_unit")
 
     e["task_queue"].clear()
+    
+    # clear movement
     e.pop("current_path", None)
+    
+    mine_task = e.pop("path_target_mine", None)
+    if not mine_task == None:
+        lvl.offset_by_pixel_mark(mine_task, -1)
+    
+    e.pop("path_target_dock", None)
+
+    # clear mining
     revert_mining_queue(e["mining_queue"])
     interupt_busy_unit(e)
 
@@ -45,7 +55,7 @@ def interupt_busy_unit(e):
     if not task == None:
         if task[0] == 0: # stop mining task
             currently_being_mined_global.remove(task[2])
-            # lvl.offset_by_pixel_mark(task[2], -1)
+            lvl.offset_by_pixel_mark(task[2], -1)
 
         elif task[0] == 1: # continue movment cooldown
             pass
