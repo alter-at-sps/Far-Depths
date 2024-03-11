@@ -52,6 +52,7 @@ def in_game_loop():
 
             "unit_index": i,
             "stored_materials": [
+                None, # air (unused)
                 0, # rock
                 0, # oxy
                 0, # goal
@@ -76,6 +77,8 @@ def in_game_loop():
 
         keys = pg.key.get_pressed()
 
+        is_shift = keys[pg.K_LSHIFT]
+
         if keys[pg.K_e]:
             mouse_pos = pg.mouse.get_pos()
             wm_pos = cam.inverse_translate(mouse_pos)
@@ -90,8 +93,6 @@ def in_game_loop():
 
             lvl.set_pixel(gm_pos, 1)
             lvl.set_pixel_navgrid(gm_pos, 0)
-
-        is_shift = keys[pg.K_LSHIFT]
 
         # drag processing
 

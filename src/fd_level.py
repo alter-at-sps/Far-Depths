@@ -1,7 +1,9 @@
 import random
+import time
 import pygame as pg
 from pygame.math import clamp
 
+import src.fd_config as conf
 import src.fd_camera as cam
 import src.fd_entity as en
 
@@ -13,20 +15,22 @@ import src.fd_render_lib as rlib
 # storage
 
 # 0 - empty
+# 1 - stone
+# 2 - oxy ore
+# 3 - goal ore
 # positive values - filled (by material type)
 
 level = []
-level_size = (500, 500)
 
 point_size = 20
 mark_margin = 5
 
-level_surface = pg.Surface((level_size[0] * point_size, level_size[1] * point_size))
-level_fow_surface = pg.Surface((level_size[0] * point_size, level_size[1] * point_size), flags=pg.SRCALPHA)
+level_surface = pg.Surface((conf.level_size[0] * point_size, conf.level_size[1] * point_size))
+level_fow_surface = pg.Surface((conf.level_size[0] * point_size, conf.level_size[1] * point_size), flags=pg.SRCALPHA)
 level_surface_damaged = []
 
-level_surface.fill(rlib.empty_color)
-level_fow_surface.fill(rlib.fog_color)
+level_surface.fill(conf.empty_color)
+level_fow_surface.fill(conf.fog_color)
 
 # 0 - fully in fog
 # 1 to 18 - out of fog
@@ -51,7 +55,7 @@ level_mark = []
 def init_level():
     level.clear()
 
-    for i in range(level_size[1]):
+    for i in range(conf.level_size[1]):
         collum = []
         level.append(collum)
 
@@ -64,7 +68,7 @@ def init_level():
         collum_mark = []
         level_mark.append(collum_mark)
 
-        for j in range(level_size[0]):
+        for j in range(conf.level_size[0]):
             collum.append(0)
             collum_fow.append(0) # max fog
             collum_nav.append(0)
@@ -128,10 +132,47 @@ def offset_by_pixel_mark(pos, val):
     level_surface_damaged.append(pos)
     level_mark[pos[0]][pos[1]] += val
 
+# level utils
+
+def set_circle(pos, radius_squared, val):
+    for x in range(pos[0] - radius_squared, pos[1] + radius_squared):
+        for y in range(pos[0] - radius_squared, pos[1] + radius_squared):
+            if (pos[0] - x) ** 2 + (pos[1] - y) ** 2 < radius_squared:
+                set_pixel((x, y), val)
+
+def world_to_grid_space(pos):
+    return ((pos[0] + level_surface.get_width() // 2) // point_size, (pos[1] + level_surface.get_height() // 2) // point_size)
+
+def grid_to_world_space(pos):
+    return (pos[0] * point_size - level_surface.get_width() // 2, pos[1]  * point_size - level_surface.get_height() // 2)
+
 # generation
 
 def inbounds(pos):
-    return (clamp(pos[0], 0, level_size[0] - 1), clamp(pos[1], 0, level_size[1] - 1))
+    return (clamp(pos[0], 0, conf.level_size[0] - 1), clamp(pos[1], 0, conf.level_size[1] - 1))
+
+last_frame_update = 0
+
+# level generator "once in a while" call this function to draw a new frame of the loading screen and prevent windows thinking the app is frozen
+def level_gen_yield():
+    global last_frame_update
+
+    if time.time() - last_frame_update < (1 / 7):
+        return
+
+    last_frame_update = time.time()
+
+    # minimal event loop
+
+    for e in pg.event.get():
+            if e.type == pg.QUIT:
+                quit()
+            if e.type == pg.WINDOWRESIZED:
+                ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
+    
+    ren.get_surface().fill(conf.empty_color)
+    en.render_entities(ren.get_surface())
+    ren.submit()
 
 def random_fill(seed, fill_percent):
     random.seed(seed)
@@ -158,14 +199,19 @@ def smooth_level():
             elif count < 4:
                 set_pixel((x, y), 0)
 
+        level_gen_yield()
+
 def gen_level(seed, fill_percent):
     init_level()
+
+    global last_frame_update
+    last_frame_update = time.time()
 
     # setup loading screen scene
     status = en.create_entity("loading_status", {
         "ui_trans": [
             (0, 0),
-            (350, 80)
+            (480, 20)
         ],
 
         "on_frame": rlib.loading_status_renderer,
@@ -178,41 +224,48 @@ def gen_level(seed, fill_percent):
     # generate level structure
 
     status["status_text"] = "> Undocking..."
-    
-    ren.get_surface().fill(rlib.empty_color)
-    en.render_entities(ren.get_surface())
-    ren.submit()
+    level_gen_yield()
 
     random_fill(seed, fill_percent)
 
     for i in range(7):
-        status["status_text"] = f"> Arriving at location... ({i + 1}/7)"
-
-        # minimal event loop
-        for e in pg.event.get():
-            if e.type == pg.QUIT:
-                quit()
-            if e.type == pg.WINDOWRESIZED:
-                ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
-
-
-        ren.get_surface().fill(rlib.empty_color)
-        en.render_entities(ren.get_surface())
-        ren.submit()
+        status["status_text"] = f"> Arriving at location... ({i * 100 // 7}%)"
 
         smooth_level()
 
     # generate deposits
-        
+
+    # prevents a crash when generating deposits outside of the level
+    min_deposit_border_margin = 35
+
+    oxy_deposit_count = random.randint(*conf.num_of_oxy_deposits_min_max)
+    
+    for i in range(oxy_deposit_count):
+        x = random.randint(min_deposit_border_margin, conf.level_size[0] - min_deposit_border_margin)
+        y = random.randint(min_deposit_border_margin, conf.level_size[1] - min_deposit_border_margin)
+
+        size = random.randint(*conf.oxy_deposit_size_min_max)
+
+        set_circle((x, y), size ** 2, 2)
+
+        level_gen_yield()
+
+    goal_deposit_count = random.randint(*conf.num_of_goal_deposits_min_max)
+    
+    for i in range(goal_deposit_count):
+        x = random.randint(min_deposit_border_margin, conf.level_size[0] - min_deposit_border_margin)
+        y = random.randint(min_deposit_border_margin, conf.level_size[1] - min_deposit_border_margin)
+
+        size = random.randint(*conf.goal_deposit_size_min_max)
+
+        set_circle((x, y), size ** 2, 3)
+
+        level_gen_yield()
+
     # pre render level
         
-    status["status_text"] = "> Searching for a landing location..."
-
-    ren.get_surface().fill(rlib.empty_color)
-    en.render_entities(ren.get_surface())
-    ren.submit()
-
-    pre_render_level()
+    # sets its status_text by its own
+    pre_render_level(status)
 
     # clear loading screen scene
 
@@ -285,7 +338,7 @@ def unfog_area(points, visibility_strenght):
 
     edge_points = []
 
-    # finds all points *next* to a reachable point
+    # finds all points *next* to reachable points
 
     for p in touched_points:
         if get_pixel_navgrid(p) == 0:
@@ -344,50 +397,41 @@ def unfog_area(points, visibility_strenght):
 
         to_check = new_to_check
 
-def set_circle(pos, radius_squared, val):
-    for x in range(pos[0] - radius_squared, pos[1] + radius_squared):
-        for y in range(pos[0] - radius_squared, pos[1] + radius_squared):
-            if (pos[0] - x) ** 2 + (pos[1] - y) ** 2 < radius_squared:
-                set_pixel((x, y), val)
-
-def world_to_grid_space(pos):
-    return ((pos[0] + level_surface.get_width() // 2) // point_size, (pos[1] + level_surface.get_height() // 2) // point_size)
-
-def grid_to_world_space(pos):
-    return (pos[0] * point_size - level_surface.get_width() // 2, pos[1]  * point_size - level_surface.get_height() // 2)
-
 color_lib = [
-    (102, 255, 255),
-    (255, 0, 0),
-    (128, 255, 0),
-    (127, 0, 255),
-    (255, 128, 0)
+    conf.empty_color,
+    conf.stone_color,
+    conf.oxy_color,
+    conf.goal_color,
 ]
 
-def pre_render_level():
+def pre_render_level(render_status):
     global level_surface_damaged
 
     # level_surface.fill((16, 16, 16))
 
-    for p in level_surface_damaged:
+    for i, p in enumerate(level_surface_damaged):
         x, y = p
         val = get_pixel(p)
 
-        pg.draw.rect(level_fow_surface, pg.Color(*rlib.fog_color, int((18 - min(level_fow[x][y], 18)) * (255 / 18))), (x * point_size, y * point_size, point_size, point_size))
+        pg.draw.rect(level_fow_surface, pg.Color(*conf.fog_color, int((18 - min(level_fow[x][y], 18)) * (255 / 18))), (x * point_size, y * point_size, point_size, point_size))
 
-        pg.draw.rect(level_surface, (200, 200, 200) if val == 1 else rlib.empty_color, (x * point_size, y * point_size, point_size, point_size))
+        pg.draw.rect(level_surface, color_lib[val], (x * point_size, y * point_size, point_size, point_size))
 
         if level_mark[x][y] > 0:
-            pg.draw.rect(level_surface, color_lib[1], (x * point_size + mark_margin, y * point_size + mark_margin, point_size - mark_margin * 2, point_size - mark_margin * 2))
-
+            pg.draw.rect(level_surface, (255, 0, 0), (x * point_size + mark_margin, y * point_size + mark_margin, point_size - mark_margin * 2, point_size - mark_margin * 2))
         # elif level_navgrid[x][y] == 1:
-            # pg.draw.rect(level_surface, color_lib[0], (x * point_size, y * point_size, point_size, point_size))
+            # pg.draw.rect(level_surface, (102, 255, 255), (x * point_size, y * point_size, point_size, point_size))
+
+        if not render_status == None: 
+            # pro rendering on loading time
+            render_status["status_text"] = f"> Searching for a landing location... ({i * 100 // len(level_surface_damaged)}%)"
+            level_gen_yield()
 
     level_surface_damaged.clear()
 
 def render_level(sur):
     if not len(level_surface_damaged) == 0:
-        pre_render_level()
+        pre_render_level(None)
 
     sur.blit(level_surface, cam.translate((0, 0), level_surface.get_size()))
     sur.blit(level_fow_surface, cam.translate((0, 0), level_fow_surface.get_size()), special_flags=pg.BLEND_ALPHA_SDL2)

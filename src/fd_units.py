@@ -142,8 +142,10 @@ def add_to_sub(sub_index, mats):
 # move_time = .2
     
 mine_times = [
-    .02,
-    5
+    0, # air (unused)
+    .02, # stone
+    .15, # oxy
+    1, # goal
 ]
 
 move_time = .005
@@ -226,7 +228,7 @@ def unit_tick(e: dict):
                 if not target in currently_being_mined_global: # avoid more units mining the same point at the same time
                     currently_being_mined_global.add(target)
 
-                    e["busy_with"] = [0, mine_times[0], target]
+                    e["busy_with"] = [0, mine_times[lvl.get_pixel(target)], target]
                     e.pop("path_target_mine")
                 else:
                     mining_queue = e["mining_queue"]

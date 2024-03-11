@@ -108,6 +108,7 @@ class FDRenderer:
             if i == len(self.render_passes) - 1:
                 out_fb = 0
 
+            # call renderer implementation (usually in fd_render_lib.py)
             rpass["frame"](rpass, in_tex, out_fb)
 
 # == init the renderer ==

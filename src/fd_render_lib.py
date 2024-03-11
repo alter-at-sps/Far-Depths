@@ -8,9 +8,6 @@ import src.fd_camera as cam
 # == fd renderer library ==
 # a few presets for common (or special) post-processing passes and renderer systems
 
-empty_color = (8, 8, 8)
-fog_color = (16, 16, 16)
-
 # basic pass (blit)
 
 def basic_frame(rpass, in_tex, out_fb):
@@ -71,11 +68,12 @@ def rect_renderer(e, sur):
 
 # loading screen status renderer
 
-font = freetype.Font("./assets/font/amiga4ever pro2.ttf", 10)
+font = freetype.Font("./assets/font/amiga4ever pro2.ttf", 16)
 
 loading_color = (255, 255, 255)
-loading_box_width = 10
-loading_status_offset = 15
+
+spinboi = "-\\|/"
+spinboi_frame = 0
 
 def loading_status_renderer(e, sur):
     # pg.draw.rect(sur, loading_color, (cam.translate_screenspace(e["ui_trans"][0], e["ui_trans"][1])))
@@ -84,4 +82,7 @@ def loading_status_renderer(e, sur):
     # rect = font.get_rect(e["status_text"])
     # e["ui_trans"][1] = (rect[2], rect[3])
 
-    font.render_to(sur, cam.translate_screenspace((e["ui_trans"][0][0] + loading_status_offset, e["ui_trans"][0][1] + loading_status_offset), (e["ui_trans"][1][0] - loading_box_width * 2 - loading_status_offset, e["ui_trans"][1][1] - loading_box_width * 2 - loading_status_offset)), e["status_text"], (255, 255, 255))
+    global spinboi_frame
+    spinboi_frame += 1
+
+    font.render_to(sur, cam.translate_screenspace((e["ui_trans"][0][0], e["ui_trans"][0][1]), (e["ui_trans"][1][0], e["ui_trans"][1][1])), e["status_text"] + " " + spinboi[spinboi_frame % 4], (255, 255, 255))
