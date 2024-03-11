@@ -86,3 +86,12 @@ def loading_status_renderer(e, sur):
     spinboi_frame += 1
 
     font.render_to(sur, cam.translate_screenspace((e["ui_trans"][0][0], e["ui_trans"][0][1]), (e["ui_trans"][1][0], e["ui_trans"][1][1])), e["status_text"] + " " + spinboi[spinboi_frame % 4], (255, 255, 255))
+
+# nls renderer
+
+def nls_renderer(e, sur):
+    t = e["ui_trans"]
+
+    render_area = cam.translate_ui(t)
+
+    pg.draw.rect(sur, (54, 85, 2), render_area)

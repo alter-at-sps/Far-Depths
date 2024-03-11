@@ -19,6 +19,14 @@ def translate_screenspace(pos, size):
     # same as translate but without camera_translation (for ui and screen space objects)
     return (pos[0] - size[0] // 2 + ren.get_surface().get_width() // 2, pos[1] - size[1] // 2 - camera_translation[1] + ren.get_surface().get_height() // 2, size[0], size[1])
 
+def translate_ui(trans):
+    # translates ui_trans in screenspace with respect to their anchors
+
+    screensize = ren.get_surface().get_size()
+    anchored_points = (trans[1][0] if not trans[0][0] else screensize[0] - trans[1][0], trans[1][1] if not trans[0][1] else screensize[1] - trans[1][1], trans[2][0] if not trans[0][0] else screensize[0] - trans[2][0], trans[2][1] if not trans[0][1] else screensize[1] - trans[2][1])
+
+    return (min(anchored_points[0], anchored_points[2]), min(anchored_points[1], anchored_points[3]), max(anchored_points[0], anchored_points[2]) - min(anchored_points[0], anchored_points[2]), max(anchored_points[1], anchored_points[3]) + min(anchored_points[1], anchored_points[3]))
+
 def inverse_translate(pos):
     # translates a screen space position to world space
     return (pos[0] + camera_translation[0] - ren.get_surface().get_width() // 2, pos[1] + camera_translation[1] - ren.get_surface().get_height() // 2)

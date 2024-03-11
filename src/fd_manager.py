@@ -8,6 +8,7 @@ import src.fd_level as lvl
 import src.fd_entity as en
 import src.fd_units as un
 import src.fd_astar as astar
+import src.fd_notif as nls
 
 # == Far Depths Main Event Loop ==
 
@@ -64,6 +65,8 @@ def in_game_loop():
 
     is_dragging = False
     drag_start_pos = None
+
+    nls.setup_nls()
 
     while True:
         # events

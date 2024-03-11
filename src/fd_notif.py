@@ -29,9 +29,9 @@ def setup_nls():
 
     nls = en.create_entity("nls_console", {
         "ui_trans": [
-            "bottom_left",
+            (True, True), # anchor inverts
             (0, 0),
-            (0, 0)
+            (100, 50)
         ],
 
         "on_frame": rlib.nls_renderer,
