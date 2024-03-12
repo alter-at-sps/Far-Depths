@@ -28,3 +28,14 @@ oxy_deposit_size_min_max = (4, 10)
 
 num_of_goal_deposits_min_max = (85, 125)
 goal_deposit_size_min_max = (6, 12)
+
+# unit behaviour
+
+mine_times = [
+    0, # air (unused)
+    .02, # stone
+    .15, # oxy
+    1, # goal
+]
+
+move_time = .005

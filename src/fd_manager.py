@@ -132,8 +132,10 @@ def in_game_loop():
 
             mining_queue = un.create_mining_queue(g_drag_area)
 
-            # lvl.set_pixels_for_mining(mining_queue)
-            un.add_mining_task(en.get_entity("unit_0"), mining_queue, is_shift)
+
+            if not len(mining_queue) == 0:
+                # lvl.set_pixels_for_mining(mining_queue)
+                un.add_mining_task(en.get_entity("unit_0"), mining_queue, is_shift)
 
         # main game update
 

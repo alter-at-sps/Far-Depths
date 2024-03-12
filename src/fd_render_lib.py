@@ -3,7 +3,7 @@ import pygame.freetype as freetype
 import pygame.gfxdraw as gfx
 import OpenGL.GL as gl
 
-from src.fd_render import *
+import src.fd_render as ren
 import src.fd_camera as cam
 import src.fd_config as conf
 
@@ -27,8 +27,8 @@ def basic_cleanup(rpass):
     gl.glDeleteProgram(rpass["shader_program"])
 
 def setup_basic_pass(vert, frag):
-    vs = load_shader(gl.GL_VERTEX_SHADER, vert)
-    fs = load_shader(gl.GL_FRAGMENT_SHADER, frag)
+    vs = ren.load_shader(gl.GL_VERTEX_SHADER, vert)
+    fs = ren.load_shader(gl.GL_FRAGMENT_SHADER, frag)
 
     p = gl.glCreateProgram()
 
@@ -122,7 +122,7 @@ def nls_renderer(e, sur):
     notif = e.get("nls_notif_timer")
 
     if not notif == None:
-        notif[1] -= 1 / 60
+        notif[1] -= ren.delta_time
 
         if notif[1] <= 0:
             e.pop("nls_notif_timer")

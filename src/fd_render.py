@@ -1,6 +1,7 @@
 import pygame as pg
 import pygame.freetype as freetype
 import OpenGL.GL as gl
+import time
 
 # == Far Depths renderer ==
 # a OpenGL / PyGame hybrid abomination
@@ -115,6 +116,9 @@ class FDRenderer:
 
 fd_renderer = FDRenderer((1280, 720))
 
+last_time = time.time()
+delta_time = 0
+
 # == renderer api ==
 
 # get surface that pygame draws to
@@ -150,6 +154,12 @@ def recreate_renderer(res, upscale):
 
 # flags that pygame pass is finished, starting post-processing pass
 def submit():
+    global delta_time
+    global last_time
+
+    delta_time = time.time() - last_time
+    last_time = time.time()
+
     fd_renderer.flip_pg_framebuffer()
 
     # post-processing pass

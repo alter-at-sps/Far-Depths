@@ -2,8 +2,10 @@ import src.fd_level as lvl
 import src.fd_entity as en
 import src.fd_astar as astar
 import src.fd_notif as nls
+import src.fd_render as ren
+import src.fd_config as conf
 
-import time
+# == Far Depths Unit AI ==
 
 # task subroutines
 
@@ -140,17 +142,6 @@ def add_to_sub(sub_index, mats):
 # ]
 
 # move_time = .2
-    
-mine_times = [
-    0, # air (unused)
-    .02, # stone
-    .15, # oxy
-    1, # goal
-]
-
-move_time = .005
-
-t = time.time()
 
 def unit_tick(e: dict):
     global t
@@ -163,14 +154,11 @@ def unit_tick(e: dict):
 
     nls_sender = f"unit {e['unit_index']}"
 
-    delta_t = time.time() - t
-    t = time.time()
-
     # check if unit busy
 
     task = e.get("busy_with")
     if not task == None:
-        task[1] -= delta_t
+        task[1] -= ren.delta_time
 
         if task[1] <= 0:
             e.pop("busy_with")
@@ -230,7 +218,7 @@ def unit_tick(e: dict):
                 if not target in currently_being_mined_global: # avoid more units mining the same point at the same time
                     currently_being_mined_global.add(target)
 
-                    e["busy_with"] = [0, mine_times[lvl.get_pixel(target)], target]
+                    e["busy_with"] = [0, conf.mine_times[lvl.get_pixel(target)], target]
                     e.pop("path_target_mine")
                 else:
                     mining_queue = e["mining_queue"]
@@ -242,7 +230,7 @@ def unit_tick(e: dict):
 
             lvl.unfog_area([ next_pos ], 24)
 
-            e["busy_with"] = [1, move_time]
+            e["busy_with"] = [1, conf.move_time]
     
     # setup the next task if idle
 
