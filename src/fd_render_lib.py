@@ -1,5 +1,6 @@
 import pygame as pg
 import pygame.freetype as freetype
+import pygame.gfxdraw as gfx
 import OpenGL.GL as gl
 
 from src.fd_render import *
@@ -98,6 +99,8 @@ def nls_renderer(e, sur):
     nls_border_size = 10
     nls_cursor_margin = 5
     nls_log_line_size = 14
+    nls_outline_margin = 15
+    nls_outline_width = 10
 
     terminal_render_area = (render_area[0] + nls_border_size, render_area[1] + nls_border_size, render_area[2] - nls_border_size * 2, render_area[3] - nls_border_size * 2) 
     
@@ -105,9 +108,34 @@ def nls_renderer(e, sur):
     pg.draw.rect(sur, conf.ui_foreground_color, render_area)
     pg.draw.rect(sur, conf.ui_background_color, terminal_render_area)
 
+    # terminal text
+
     cursor_draw_point = (terminal_render_area[0] + nls_cursor_margin, terminal_render_area[1] + nls_cursor_margin, terminal_render_area[2] - nls_cursor_margin * 2, nls_log_line_size)
 
     for i, line in enumerate(e["nls_log_console"]):
         line_area = (cursor_draw_point[0], cursor_draw_point[1] + nls_log_line_size * i, *cursor_draw_point[2:3])
 
         font.render_to(sur, line_area, line[1], conf.nls_log_colors[line[0]], size=10)
+    
+    # notification ping outline
+
+    notif = e.get("nls_notif_timer")
+
+    if not notif == None:
+        notif[1] -= 1 / 60
+
+        if notif[1] <= 0:
+            e.pop("nls_notif_timer")
+            return
+
+        if int(notif[1] * 4) % 2 == 1:
+            alpha = 200
+        else:
+            alpha = 127
+
+        for i in range(nls_outline_width):
+            outline_render_area = (render_area[0] - nls_outline_margin - i, render_area[1] - nls_outline_margin - i, render_area[2] + nls_outline_margin * 2 + 2 * i, render_area[3] + nls_outline_margin * 2 + 2 * i)
+
+            gfx.rectangle(sur, outline_render_area, (*conf.nls_log_colors[notif[0]], alpha))
+
+        

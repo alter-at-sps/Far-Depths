@@ -186,6 +186,8 @@ def unit_tick(e: dict):
                 lvl.set_pixel_navgrid(task[2], 1) # expand navgrid
                 lvl.set_pixel_mark(task[2], 0) # remove mining overlay
 
+                lvl.unfog_area([ task[2] ], 1) # trigger incremental flood fill
+
                 currently_being_mined_global.remove(task[2])
 
                 mining_queue = e["mining_queue"]
