@@ -1,3 +1,5 @@
+# == WARNING: These settings are not ment to be changed randomly and can cause crashes if set incorectly ==
+
 # graphics
 
 empty_color = (8, 8, 8)
@@ -7,6 +9,15 @@ stone_color = (200, 200, 200)
 oxy_color = (245, 245, 245)
 goal_color = (64, 245, 64)
 
+loading_status_texts = [
+    "> Undocking...",
+    "> Searching for a suitable location...",
+    "> Traveling to location...",
+    "> Searching for a landing location...",
+    "> Landing at location...",
+    "> Get ready for deployment!"
+]
+
 ui_foreground_color = (255, 255, 255)
 ui_background_color = (8, 8, 8)
 
@@ -15,6 +26,14 @@ nls_log_colors = [
     (200, 200, 64),
     (255, 16, 16)
 ]
+
+nls_border_size = 10
+nls_cursor_margin = 5
+nls_log_line_size = 14
+nls_outline_margin = 10
+nls_outline_width = 10
+
+ctl_border_size = 10
 
 # level gen
 

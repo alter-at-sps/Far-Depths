@@ -151,6 +151,9 @@ def grid_to_world_space(pos):
 def inbounds(pos):
     return (clamp(pos[0], 0, conf.level_size[0] - 1), clamp(pos[1], 0, conf.level_size[1] - 1))
 
+def refresh_loading_status(loading_percent):
+    en.get_entity("loading_status")["status_text"] = conf.loading_status_texts[int(len(conf.loading_status_texts) * loading_percent)] + f" ({int(loading_percent * 100)}%)"
+
 last_frame_update = 0
 
 # level generator "once in a while" call this function to draw a new frame of the loading screen and prevent windows thinking the app is frozen
@@ -229,7 +232,7 @@ def gen_level(seed, fill_percent):
     random_fill(seed, fill_percent)
 
     for i in range(7):
-        status["status_text"] = f"> Arriving at location... ({i * 100 // 7}%)"
+        refresh_loading_status(i * .5 / 7)
 
         smooth_level()
 
@@ -424,7 +427,8 @@ def pre_render_level(render_status):
 
         if not render_status == None: 
             # pro rendering on loading time
-            render_status["status_text"] = f"> Searching for a landing location... ({i * 100 // len(level_surface_damaged)}%)"
+            refresh_loading_status(.5 + (i * .5 / len(level_surface_damaged)))
+            
             level_gen_yield()
 
     level_surface_damaged.clear()
