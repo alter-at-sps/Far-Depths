@@ -64,7 +64,7 @@ class FDRenderer:
 
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
-        self.pg_fb.fill((0, 0, 0)) # clear pygame side framebuffer
+        # self.pg_fb.fill((0, 0, 0)) # clear pygame side framebuffer
 
     def create_offscreen_framebuffers(self):
         self.fbs = gl.glGenFramebuffers(2)

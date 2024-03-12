@@ -1,4 +1,5 @@
 import pygame as pg
+import random
 
 import src.fd_render as ren
 import src.fd_render_lib as rlib
@@ -9,11 +10,16 @@ import src.fd_entity as en
 import src.fd_units as un
 import src.fd_astar as astar
 import src.fd_notif as nls
+import src.fd_config as conf
 
 # == Far Depths Main Event Loop ==
 
 def in_game_loop():
+    pg.display.set_caption("Far Depths - Traveling to a forbidden location")
+
     lvl.gen_level(None, 25)
+
+    pg.display.set_caption("Far Depths - Scanning and Mining" if random.randint(0, 100) <= 30 else random.choice(conf.secret_titles)) 
 
     # generate base
 
@@ -155,5 +161,57 @@ def in_game_loop():
 
         ren.submit()
 
+    en.reset()
+
 def menu_loop():
-    pass
+    pg.display.set_caption("Far Depths - Chiling at central")
+
+    title = en.create_entity("menu_title", {
+        "ui_trans": [
+            (2, 2), # anchor to center
+            (-250, -250),
+            (250, -170)
+        ],
+
+        "on_frame": rlib.title_renderer,
+    })
+
+    start_button = en.create_entity("start_button", {
+        "ui_trans": [
+            (2, 2),
+            (-110, -50),
+            (110, -5)
+        ],
+
+        "on_frame": rlib.button_renderer,
+        "button_border_size": 5,
+        "button_text": "Undock and Start",
+    })
+
+    howto_button = en.create_entity("howto_button", {
+        "ui_trans": [
+            (2, 2),
+            (-110, 5),
+            (110, 50)
+        ],
+
+        "on_frame": rlib.button_renderer,
+        "button_border_size": 5,
+        "button_text": "How to Play",
+    })
+
+    while True:
+        # events
+        for e in pg.event.get():
+            if e.type == pg.QUIT:
+                return
+            if e.type == pg.WINDOWRESIZED:
+                ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
+
+        sur = ren.get_surface()
+        sur.fill(conf.empty_color)
+
+        en.render_entities(sur)
+        ren.submit()
+
+    en.reset()

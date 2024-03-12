@@ -23,4 +23,5 @@ y = 0
 
 i = 0
 
-mgr.in_game_loop()
+mgr.menu_loop()
+# mgr.in_game_loop()

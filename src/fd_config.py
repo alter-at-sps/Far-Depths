@@ -58,3 +58,17 @@ mine_times = [
 ]
 
 move_time = .005
+
+# menu
+
+secret_titles = [
+    "Far Depths - Mining and stayin' alive, stayin' alive",
+    "Far Depths - Never gonna mine you up",
+    "Far Depths - Failing to reach centrals weekly quota",
+    "Far Depths - Being a great asset for central",
+    "Far Depths - Mining for Democracy",
+    "Far Depths - There are no enemies in this game, right?",
+    "Far Depths - Mining in an OSHA approved definitely non-lethal submersible",
+    "Far Depths - Mining with only 24 new warnings per second",
+    "Far Depths - Mining and ignoring all the bugs that don't exists.",
+]
