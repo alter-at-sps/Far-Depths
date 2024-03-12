@@ -6,7 +6,7 @@ out vec4 frag;
 uniform sampler2D in_frame;
 uniform float time;
 
-const float aberration_strength = 0.15;
+const float aberration_strength = 0.12;
 
 const float scanline_count = 800;
 const float scanline_strenght = 0.04;

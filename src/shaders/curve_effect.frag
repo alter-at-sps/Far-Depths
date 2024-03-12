@@ -5,7 +5,7 @@ out vec4 frag;
 
 uniform sampler2D in_frame;
 
-const float distorsion_strenght = .2;
+const float distorsion_strenght = .12;
 
 void main() {
     // simulates the distorsion caused by the curve of a CRT monitor

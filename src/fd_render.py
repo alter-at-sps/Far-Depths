@@ -114,7 +114,7 @@ class FDRenderer:
 
 # == init the renderer ==
 
-fd_renderer = FDRenderer((1280, 720))
+fd_renderer = FDRenderer((1728, 972))
 
 last_time = time.time()
 delta_time = 0
