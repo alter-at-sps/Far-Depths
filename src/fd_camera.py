@@ -25,7 +25,7 @@ def translate_ui(trans):
     screensize = ren.get_surface().get_size()
     anchored_points = (trans[1][0] if not trans[0][0] else screensize[0] - trans[1][0], trans[1][1] if not trans[0][1] else screensize[1] - trans[1][1], trans[2][0] if not trans[0][0] else screensize[0] - trans[2][0], trans[2][1] if not trans[0][1] else screensize[1] - trans[2][1])
 
-    return (min(anchored_points[0], anchored_points[2]), min(anchored_points[1], anchored_points[3]), max(anchored_points[0], anchored_points[2]) - min(anchored_points[0], anchored_points[2]), max(anchored_points[1], anchored_points[3]) + min(anchored_points[1], anchored_points[3]))
+    return (min(anchored_points[0], anchored_points[2]), min(anchored_points[1], anchored_points[3]), max(anchored_points[0], anchored_points[2]) - min(anchored_points[0], anchored_points[2]), max(anchored_points[1], anchored_points[3]) - min(anchored_points[1], anchored_points[3]))
 
 def inverse_translate(pos):
     # translates a screen space position to world space

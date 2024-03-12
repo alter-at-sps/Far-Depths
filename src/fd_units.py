@@ -120,7 +120,7 @@ def set_next_to_mine(e, finished_point, mining_queue: set):
 
     # failed to find path to continue mining
 
-    nls.push_error(f"unit {e['unit_index']}", "Failed to find path to continue mining, stopping!")
+    nls.push_error(f"unit {e['unit_index']}", "Can't find path to continue mining!")
 
     revert_mining_queue(e["mining_queue"])
 
@@ -265,10 +265,12 @@ def unit_tick(e: dict):
 
                     nls.push_info(nls_sender, f"Moving to position {path[-1]}.")
             else:
-                nls.push_error(nls_sender, "Failed to move to the requested position, stopping!")
+                nls.push_error(nls_sender, "Can't find a path to the next location!")
 
         else:
             raise ValueError("invalid task type on task_setup")
-    elif e.get("busy_with") == None and len(task_queue) == 0:
-        # nls.push_warn(nls_sender, "Finished all tasks in my queue, idling...") 
-        pass
+    elif e.get("busy_with") == None and len(task_queue) == 0 and not e["already_idle"]:
+        nls.push_warn(nls_sender, "Finished all tasks in my queue, idling...") 
+        e["already_idle"] = True
+    elif not e.get("busy_with") == None or not len(task_queue) == 0:
+        e["already_idle"] = False 

@@ -7,6 +7,15 @@ stone_color = (200, 200, 200)
 oxy_color = (245, 245, 245)
 goal_color = (64, 245, 64)
 
+ui_foreground_color = (255, 255, 255)
+ui_background_color = (8, 8, 8)
+
+nls_log_colors = [
+    (225, 225, 225),
+    (200, 200, 64),
+    (255, 16, 16)
+]
+
 # level gen
 
 level_size = (500, 500)

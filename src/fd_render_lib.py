@@ -4,6 +4,7 @@ import OpenGL.GL as gl
 
 from src.fd_render import *
 import src.fd_camera as cam
+import src.fd_config as conf
 
 # == fd renderer library ==
 # a few presets for common (or special) post-processing passes and renderer systems
@@ -85,7 +86,7 @@ def loading_status_renderer(e, sur):
     global spinboi_frame
     spinboi_frame += 1
 
-    font.render_to(sur, cam.translate_screenspace((e["ui_trans"][0][0], e["ui_trans"][0][1]), (e["ui_trans"][1][0], e["ui_trans"][1][1])), e["status_text"] + " " + spinboi[spinboi_frame % 4], (255, 255, 255))
+    font.render_to(sur, cam.translate_screenspace((e["transform"][0][0], e["transform"][0][1]), (e["transform"][1][0], e["transform"][1][1])), e["status_text"] + " " + spinboi[spinboi_frame % 4], (255, 255, 255))
 
 # nls renderer
 
@@ -94,4 +95,19 @@ def nls_renderer(e, sur):
 
     render_area = cam.translate_ui(t)
 
-    pg.draw.rect(sur, (54, 85, 2), render_area)
+    nls_border_size = 10
+    nls_cursor_margin = 5
+    nls_log_line_size = 14
+
+    terminal_render_area = (render_area[0] + nls_border_size, render_area[1] + nls_border_size, render_area[2] - nls_border_size * 2, render_area[3] - nls_border_size * 2) 
+    
+    # border and terminal background
+    pg.draw.rect(sur, conf.ui_foreground_color, render_area)
+    pg.draw.rect(sur, conf.ui_background_color, terminal_render_area)
+
+    cursor_draw_point = (terminal_render_area[0] + nls_cursor_margin, terminal_render_area[1] + nls_cursor_margin, terminal_render_area[2] - nls_cursor_margin * 2, nls_log_line_size)
+
+    for i, line in enumerate(e["nls_log_console"]):
+        line_area = (cursor_draw_point[0], cursor_draw_point[1] + nls_log_line_size * i, *cursor_draw_point[2:3])
+
+        font.render_to(sur, line_area, line[1], conf.nls_log_colors[line[0]], size=10)

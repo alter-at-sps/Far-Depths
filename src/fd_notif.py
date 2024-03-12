@@ -3,7 +3,7 @@ import src.fd_entity as en
 
 # == Far Depths Notifications and (in-game) Logs ==
 
-max_log_length = 12
+max_log_length = 15
 log_console = []
 
 def append_log(log):
@@ -13,15 +13,15 @@ def append_log(log):
         log_console.pop(0)
 
 def push_info(sender, message):
-    append_log((0, f"> {sender} INFO: {message}"))
+    append_log((0, f"> {sender}: {message}"))
     print(f"> {sender} INFO: {message}")
 
 def push_warn(sender, message):
-    append_log((1, f"> {sender} WARN: {message}"))
+    append_log((1, f"> {sender}: {message}"))
     print(f"> {sender} WARN: {message}")
 
 def push_error(sender, message):
-    append_log((2, f"> {sender} ERROR: {message}"))
+    append_log((2, f"> {sender}: {message}"))
     print(f"> {sender} ERROR: {message}")
 
 def setup_nls():
@@ -29,9 +29,9 @@ def setup_nls():
 
     nls = en.create_entity("nls_console", {
         "ui_trans": [
-            (True, True), # anchor inverts
+            (False, True), # anchor inverts
             (0, 0),
-            (100, 50)
+            (475, 250)
         ],
 
         "on_frame": rlib.nls_renderer,

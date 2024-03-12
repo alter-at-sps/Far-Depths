@@ -60,7 +60,9 @@ def in_game_loop():
             ],
 
             "task_queue": [],
-            "mining_queue": set()
+            "mining_queue": set(),
+
+            "already_idle": True,
         })
 
     is_dragging = False

@@ -209,7 +209,7 @@ def gen_level(seed, fill_percent):
 
     # setup loading screen scene
     status = en.create_entity("loading_status", {
-        "ui_trans": [
+        "transform": [
             (0, 0),
             (480, 20)
         ],
