@@ -33,7 +33,14 @@ def in_game_loop():
         ],
 
         "on_frame": rlib.rect_renderer,
-        "rect_color": (254, 254, 254)
+        "rect_color": (254, 254, 254),
+
+        "stored_materials": [
+            None, # air (unused)
+            0, # rock
+            0, # oxy
+            0, # goal
+        ],
 
         # "tick": None,
     })
@@ -50,6 +57,7 @@ def in_game_loop():
             ],
 
             "grid_trans": (base_pos[0] + unit[0], base_pos[1] + unit[1]),
+            "base_dock_pos": (base_pos[0] + unit[0], base_pos[1] + unit[1]),
 
             "on_frame": rlib.rect_renderer,
             "rect_color": (128, 128, 128),
@@ -65,6 +73,7 @@ def in_game_loop():
                 0, # oxy
                 0, # goal
             ],
+            "transfer_size": 0,
 
             "task_queue": [],
             "mining_queue": set(),
@@ -74,6 +83,9 @@ def in_game_loop():
 
     is_dragging = False
     drag_start_pos = None
+
+    is_right_pressed = False
+    dock_base_pressed = False
 
     cam_x = 0
     cam_y = 0
@@ -119,12 +131,22 @@ def in_game_loop():
         if keys[pg.K_4]:
             selected_unit = 4
 
-        if keys[pg.K_e]:
+        if pg.mouse.get_pressed()[2] and not is_right_pressed:
+            is_right_pressed = True
+
             mouse_pos = pg.mouse.get_pos()
             wm_pos = cam.inverse_translate(mouse_pos)
             gm_pos = lvl.world_to_grid_space(wm_pos)
 
             un.add_move_task(en.get_entity(f"unit_{selected_unit}"), gm_pos, is_shift)
+        elif not pg.mouse.get_pressed()[2]:
+            is_right_pressed = False
+
+        if keys[pg.K_r] and not dock_base_pressed:
+            dock_base_pressed = True
+            un.add_dock_task(en.get_entity(f"unit_{selected_unit}"), None, is_shift)
+        elif not keys[pg.K_r]:
+            dock_base_pressed = False
 
         # drag processing
 

@@ -33,6 +33,8 @@ def clear_unit_tasks(e):
                 lvl.offset_by_pixel_mark(p, -1)
         elif task[0] == 1: # move task
             pass
+        elif task[0] == 2: # dock task
+            pass
         else:
             raise ValueError("invalid task type on clear_unit")
 
@@ -61,7 +63,8 @@ def interupt_busy_unit(e):
 
         elif task[0] == 1: # continue movment cooldown
             pass
-
+        elif task[0] == 2: # material transfer
+            pass
         else: 
             raise ValueError("invalid task type on busy_interupt")
 
@@ -77,6 +80,13 @@ def add_move_task(e, target_point, append_task):
 
     e["task_queue"].append((1, target_point))
 
+# sub_index = None if docking to base
+def add_dock_task(e, sub_index, append_task):
+    if not append_task:
+        clear_unit_tasks(e)
+
+    e["task_queue"].append((2, sub_index))
+
 # mining subroutines
 
 # contains a set of all points currenly being mined by a unit
@@ -88,7 +98,7 @@ def set_next_to_mine(e, finished_point, mining_queue: set):
     for p in [ (1, 0), (0, 1), (-1, 0), (0, -1) ]:
         p = ((finished_point[0] + p[0], finished_point[1] + p[1]))
 
-        # check if not mined by other units in the meantime
+        # check if already mined out and skip and if already being mined by a different unit (can't remove here yet)
         if lvl.get_pixel(p) == 0 or p in currently_being_mined_global:
             continue
 
@@ -144,16 +154,6 @@ def set_next_to_mine(e, finished_point, mining_queue: set):
 
     revert_mining_queue(e["mining_queue"])
 
-# transfer subroutines
-
-def add_to_base(mats):
-    print("add_to_base TODO")
-
-def add_to_sub(sub_index, mats):
-    sub = en.get_entity(f"substation_{sub_index}")
-
-    print("add_to_sub TODO")
-
 # mine_times = [
 #     2,
 #     5
@@ -201,6 +201,25 @@ def unit_tick(e: dict):
                     set_next_to_mine(e, task[2], mining_queue)
             elif task[0] == 1: # moving cooldown
                 pass
+            elif task[0] == 2: # material transfer
+                if task[3] == None:
+                    base_mats = en.get_entity("player_base")["stored_materials"]
+
+                    base_mats[task[2]] += 1
+                    e["stored_materials"][task[2]] -= 1
+                    e["transfer_size"] += 1
+                else:
+                    pass
+                    # add_to_sub(task[3], [ task[2] ])
+
+                for i, mat in enumerate(e["stored_materials"]):
+                    if not mat == None and not mat == 0:
+                        e["busy_with"] = [2, conf.transfer_time, i, task[3]]
+                        break
+                
+                if e.get("busy_with") == None:
+                    nls.push_info(nls_sender, f"Finished transfering {e['transfer_size']} blocks!")
+                    e["transfer_size"] = 0
             else:
                 raise ValueError("invalid task type on busy_with")
 
@@ -216,6 +235,8 @@ def unit_tick(e: dict):
         mining_queue = e["mining_queue"]
         if not len(mining_queue) == 0:
             set_next_to_mine(e, e["grid_trans"], mining_queue)
+        else:
+            e.pop("path_target_mine")
 
     # path following update
 
@@ -225,30 +246,23 @@ def unit_tick(e: dict):
         if len(path) == 0:
             e.pop("current_path")
 
-            target = e.get("path_target_dock")
-            if not target == None:
-                if target == 0: # target is base
-                    # transfer materials to base
-                    mats = e["stored_materials"]
-
-                    add_to_base(mats.copy())
-                    mats.clear()
-
-                else: # target is substation
-                    # transfer materials to substation
-                    mats = e["stored_materials"]
-
-                    add_to_sub(target - 1, mats.copy())
-
-            target = e.get("path_target_mine")
+            target = e.pop("path_target_mine", None)
             if not target == None: # target is a mining location
                 if not target in currently_being_mined_global and not lvl.get_pixel(target) == 0: # avoid more units mining the same point at the same time
                     currently_being_mined_global.add(target)
 
                     e["busy_with"] = [0, conf.mine_times[lvl.get_pixel(target)], target]
-                    e.pop("path_target_mine")
                 else:
                     raise SyntaxError("mining global lock caugth too late.")
+            
+            target = e.pop("path_target_dock", -1)
+            if target == None or not target == -1:
+                nls.push_info(nls_sender, "Docked and transfering blocks...")
+
+                for i, mat in enumerate(e["stored_materials"]):
+                    if not mat == None and not mat == 0:
+                        e["busy_with"] = [2, conf.transfer_time, i, target]
+                        break
                     
         else:
             next_pos = path.pop(0)
@@ -288,6 +302,20 @@ def unit_tick(e: dict):
                     nls.push_info(nls_sender, f"Moving to position {path[-1]}.")
             else:
                 nls.push_error(nls_sender, "Can't find a path to the next location!")
+
+        elif task[0] == 2: # dock task
+            if task[1] == None:
+                path = astar.pathfind(e["grid_trans"], e["base_dock_pos"])
+            else:
+                pass
+                # path = astar.pathfind(e["grid_trans"], ksa)
+
+            if not path == None:
+                e["current_path"] = path
+                e["path_target_dock"] = task[1]
+            else:
+                # should *never* happen
+                nls.push_error(nls_sender, "Can't find a path to docking port!")
 
         else:
             raise ValueError("invalid task type on task_setup")
