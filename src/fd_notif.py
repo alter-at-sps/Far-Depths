@@ -3,7 +3,7 @@ import src.fd_entity as en
 
 # == Far Depths Notifications and (in-game) Logs ==
 
-max_log_length = 15
+max_log_length = 16
 log_console = []
 
 def append_log(log):

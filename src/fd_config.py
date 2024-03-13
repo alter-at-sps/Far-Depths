@@ -28,7 +28,7 @@ nls_log_colors = [
     (255, 16, 16)
 ]
 
-nls_border_size = 10
+nls_border_size = 5
 nls_cursor_margin = 5
 nls_log_line_size = 14
 nls_outline_margin = 10
@@ -60,6 +60,8 @@ mine_times = [
 
 move_time = .005
 
+cam_speed = 500
+
 # menu
 
 secret_titles = [
@@ -73,3 +75,5 @@ secret_titles = [
     "Far Depths - Mining with only 24 new warnings per second",
     "Far Depths - Mining and ignoring all the bugs that don't exists.",
 ]
+
+dev_fastmap = False

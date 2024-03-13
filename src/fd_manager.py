@@ -23,10 +23,13 @@ def in_game_loop():
 
     # generate base
 
+    base_pos = (conf.level_size[0] // 2, conf.level_size[1] // 2)
+    base_world_pos = lvl.grid_to_world_space(base_pos)
+
     base = en.create_entity("player_base", {
         "transform": [ # base at world root
-            (0, 0),
-            (40, 40)
+            (base_world_pos[0] + 30, base_world_pos[1] + 20),
+            (60, 40)
         ],
 
         "on_frame": rlib.rect_renderer,
@@ -35,20 +38,18 @@ def in_game_loop():
         # "tick": None,
     })
 
-    base_grid_pos = lvl.world_to_grid_space(base["transform"][0])
+    lvl.set_circle(base_pos, 100, 0) # clear spawn location
+    lvl.set_pixel_navgrid(base_pos, 1) # initial navgrid origin
+    lvl.unfog_area([ base_pos ], 64) # initial unfoged area
 
-    lvl.set_circle(base_grid_pos, 100, 0) # clear spawn location
-    lvl.set_pixel_navgrid(base_grid_pos, 1) # initial navgrid origin
-    lvl.unfog_area([ base_grid_pos ], 64) # initial unfoged area
-
-    for i, unit in enumerate([ (247, 250) ]):#[ (0, -1), (1, -1), (-1, 0), (-1, 1) ]):
+    for i, unit in enumerate([ (0, -1), (1, -1), (-1, 0), (-1, 1) ], 1):
         en.create_entity(f"unit_{i}", {
             "transform": [
                 None, # set on ticks
                 (15, 15) 
             ],
 
-            "grid_trans": unit,
+            "grid_trans": (base_pos[0] + unit[0], base_pos[1] + unit[1]),
 
             "on_frame": rlib.rect_renderer,
             "rect_color": (128, 128, 128),
@@ -74,6 +75,11 @@ def in_game_loop():
     is_dragging = False
     drag_start_pos = None
 
+    cam_x = 0
+    cam_y = 0
+
+    selected_unit = 1
+
     nls.setup_nls()
 
     while True:
@@ -90,20 +96,35 @@ def in_game_loop():
 
         is_shift = keys[pg.K_LSHIFT]
 
+        if keys[pg.K_w]:
+            cam_y -= conf.cam_speed * ren.delta_time
+        
+        if keys[pg.K_s]:
+            cam_y += conf.cam_speed * ren.delta_time
+        
+        if keys[pg.K_d]:
+            cam_x += conf.cam_speed * ren.delta_time
+        
+        if keys[pg.K_a]:
+            cam_x -= conf.cam_speed * ren.delta_time
+
+        cam.set_camera((int(cam_x), int(cam_y)))
+
+        if keys[pg.K_1]:
+            selected_unit = 1
+        if keys[pg.K_2]:
+            selected_unit = 2
+        if keys[pg.K_3]:
+            selected_unit = 3
+        if keys[pg.K_4]:
+            selected_unit = 4
+
         if keys[pg.K_e]:
             mouse_pos = pg.mouse.get_pos()
             wm_pos = cam.inverse_translate(mouse_pos)
             gm_pos = lvl.world_to_grid_space(wm_pos)
 
-            un.add_move_task(en.get_entity("unit_0"), gm_pos, is_shift)
-
-        if pg.mouse.get_pressed()[1]:
-            mouse_pos = pg.mouse.get_pos()
-            wm_pos = cam.inverse_translate(mouse_pos)
-            gm_pos = lvl.world_to_grid_space(wm_pos)
-
-            lvl.set_pixel(gm_pos, 1)
-            lvl.set_pixel_navgrid(gm_pos, 0)
+            un.add_move_task(en.get_entity(f"unit_{selected_unit}"), gm_pos, is_shift)
 
         # drag processing
 
@@ -141,13 +162,11 @@ def in_game_loop():
 
             if not len(mining_queue) == 0:
                 # lvl.set_pixels_for_mining(mining_queue)
-                un.add_mining_task(en.get_entity("unit_0"), mining_queue, is_shift)
+                un.add_mining_task(en.get_entity(f"unit_{selected_unit}"), mining_queue, is_shift)
 
         # main game update
 
         en.tick()
-
-        cam.set_camera(en.get_entity("unit_0")["transform"][0])
 
         # render frame
 

@@ -10,6 +10,9 @@ import src.fd_entity as en
 import src.fd_render as ren
 import src.fd_render_lib as rlib
 
+if conf.dev_fastmap:
+    import pickle
+
 # == Far Depths Level Storage and Generator ==
 
 # storage
@@ -207,6 +210,23 @@ def smooth_level():
 def gen_level(seed, fill_percent):
     init_level()
 
+    if conf.dev_fastmap:
+        try:
+            file = open("dev_map.pickle", mode='br')
+
+            print("loading dev map...")
+            pregen_map = pickle.load(file)
+            file.close()
+
+            global level, level_fow, level_navgrid, level_surface, level_fow_surface
+            level, level_fow, level_navgrid, level_surface, level_fow_surface = (*pregen_map[0:3], pg.image.fromstring(pregen_map[3], (conf.level_size[0] * point_size, conf.level_size[1] * point_size), 'RGB'), pg.image.fromstring(pregen_map[4], (conf.level_size[0] * point_size, conf.level_size[1] * point_size), 'RGBA'))
+
+            del pregen_map
+            return
+
+        except OSError:
+            pass
+
     global last_frame_update
     last_frame_update = time.time()
 
@@ -273,6 +293,13 @@ def gen_level(seed, fill_percent):
     # clear loading screen scene
 
     en.reset()
+
+    if conf.dev_fastmap:
+        file = open("dev_map.pickle", mode='bw')
+
+        print("dumping dev map...")
+        pickle.dump((level, level_fow, level_navgrid, pg.image.tostring(level_surface, 'RGB'), pg.image.tostring(level_fow_surface, 'RGBA')), file)
+        file.close()
 
 # checks if the navpoint would be in a wall or in fog    
 def is_valid_navpoint(p):    

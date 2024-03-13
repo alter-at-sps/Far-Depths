@@ -121,6 +121,8 @@ def set_next_to_mine(e, finished_point, mining_queue: set):
 
             for _p in remove_queue:
                 mining_queue.remove(_p)
+
+            revert_mining_queue(remove_queue)
             
             mining_queue.remove(p)
 
@@ -133,6 +135,7 @@ def set_next_to_mine(e, finished_point, mining_queue: set):
 
     # failed to find path to continue mining
 
+    revert_mining_queue(remove_queue)
     if len(mining_queue) == 0 and just_removed:
         # "finished" mining operation without errors
         return
@@ -205,6 +208,15 @@ def unit_tick(e: dict):
 
     # setup next task if idle
 
+    # check path target lock *before* updating path
+
+    target = e.get("path_target_mine")
+
+    if not target == None and (target in currently_being_mined_global or lvl.get_pixel(target) == 0):    
+        mining_queue = e["mining_queue"]
+        if not len(mining_queue) == 0:
+            set_next_to_mine(e, e["grid_trans"], mining_queue)
+
     # path following update
 
     path = e.get("current_path")
@@ -230,15 +242,14 @@ def unit_tick(e: dict):
 
             target = e.get("path_target_mine")
             if not target == None: # target is a mining location
-                if not target in currently_being_mined_global: # avoid more units mining the same point at the same time
+                if not target in currently_being_mined_global and not lvl.get_pixel(target) == 0: # avoid more units mining the same point at the same time
                     currently_being_mined_global.add(target)
 
                     e["busy_with"] = [0, conf.mine_times[lvl.get_pixel(target)], target]
                     e.pop("path_target_mine")
                 else:
-                    mining_queue = e["mining_queue"]
-                    if not len(mining_queue) == 0:
-                        set_next_to_mine(e, e["grid_trans"], mining_queue)
+                    raise SyntaxError("mining global lock caugth too late.")
+                    
         else:
             next_pos = path.pop(0)
             e["grid_trans"] = next_pos
@@ -250,6 +261,12 @@ def unit_tick(e: dict):
     # setup the next task if idle
 
     task_queue = e["task_queue"]
+
+    if e.get("busy_with") == None and len(task_queue) == 0 and not e["already_idle"]:
+        nls.push_warn(nls_sender, "Finished all tasks in my queue, idling...") 
+        e["already_idle"] = True
+    elif not e.get("busy_with") == None or not len(task_queue) == 0:
+        e["already_idle"] = False 
 
     if e.get("busy_with") == None and not len(task_queue) == 0:
         task = task_queue.pop(0)
@@ -274,8 +291,3 @@ def unit_tick(e: dict):
 
         else:
             raise ValueError("invalid task type on task_setup")
-    elif e.get("busy_with") == None and len(task_queue) == 0 and not e["already_idle"]:
-        nls.push_warn(nls_sender, "Finished all tasks in my queue, idling...") 
-        e["already_idle"] = True
-    elif not e.get("busy_with") == None or not len(task_queue) == 0:
-        e["already_idle"] = False 
