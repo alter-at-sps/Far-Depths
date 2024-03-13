@@ -20,6 +20,7 @@ loading_status_texts = [
 
 ui_foreground_color = (255, 255, 255)
 ui_background_color = (8, 8, 8)
+ui_foreground_faded_color = (127, 127, 127)
 
 nls_log_colors = [
     (225, 225, 225),

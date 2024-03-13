@@ -438,4 +438,9 @@ def render_level(sur):
         pre_render_level(None)
 
     sur.blit(level_surface, cam.translate((0, 0), level_surface.get_size()))
+
+def render_fow(sur):
+    if not len(level_surface_damaged) == 0:
+        pre_render_level(None)
+
     sur.blit(level_fow_surface, cam.translate((0, 0), level_fow_surface.get_size()), special_flags=pg.BLEND_ALPHA_SDL2)

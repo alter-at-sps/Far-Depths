@@ -36,7 +36,7 @@ def setup_nls():
             (475, 250)
         ],
 
-        "on_frame": rlib.nls_renderer,
+        "on_ui_frame": rlib.nls_renderer,
         "nls_log_console": log_console
     })
 

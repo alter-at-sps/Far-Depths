@@ -104,10 +104,13 @@ def set_next_to_mine(e, finished_point, mining_queue: set):
 
     current_point = e["grid_trans"]
 
+    # workaround for sets not being able to change size durind iteration
+    remove_queue = []
+
     for p in mining_queue:
         # check if not mined by other units in the meantime
         if lvl.get_pixel(p) == 0 or p in currently_being_mined_global:
-            mining_queue.remove(p)
+            remove_queue.append(p)
             continue
 
         path = astar.pathfind(current_point, p, True)
@@ -115,12 +118,24 @@ def set_next_to_mine(e, finished_point, mining_queue: set):
         if not path == None:
             e["current_path"] = path
             e["path_target_mine"] = p
+
+            for _p in remove_queue:
+                mining_queue.remove(_p)
             
             mining_queue.remove(p)
 
             return
+    
+    just_removed = not len(remove_queue) == 0
+
+    for _p in remove_queue:
+        mining_queue.remove(_p)
 
     # failed to find path to continue mining
+
+    if len(mining_queue) == 0 and just_removed:
+        # "finished" mining operation without errors
+        return
 
     nls.push_error(f"unit {e['unit_index']}", "Can't find path to continue mining!")
 

@@ -19,7 +19,7 @@ def in_game_loop():
 
     lvl.gen_level(None, 25)
 
-    pg.display.set_caption("Far Depths - Scanning and Mining" if random.randint(0, 100) <= 30 else random.choice(conf.secret_titles)) 
+    pg.display.set_caption("Far Depths - Scanning and Mining" if random.randint(0, 100) > 40 else random.choice(conf.secret_titles)) 
 
     # generate base
 
@@ -80,7 +80,7 @@ def in_game_loop():
         # events
         for e in pg.event.get():
             if e.type == pg.QUIT:
-                return
+                return None
             if e.type == pg.WINDOWRESIZED:
                 ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
 
@@ -155,6 +155,9 @@ def in_game_loop():
 
         lvl.render_level(sur)
         en.render_entities(sur)
+        lvl.render_fow(sur)
+
+        en.render_ui(sur)
 
         if not drag_area == None:
             pg.draw.rect(sur, (64, 255, 64), (drag_area[0][0], drag_area[0][1], drag_area[1][0] - drag_area[0][0], drag_area[1][1] - drag_area[0][1]))
@@ -163,8 +166,32 @@ def in_game_loop():
 
     en.reset()
 
+    return 0 # switch to menu loop
+
+# == main menu ==
+
+game_started = False
+
+def is_click_on_ui(t, click):
+    pos = click[0]
+    ui_area = cam.translate_ui(t)
+
+    rel_pos = (pos[0] - ui_area[0], pos[1] - ui_area[1])
+
+    return (rel_pos[0] >= 0 and rel_pos[0] <= ui_area[2]) and (rel_pos[1] >= 0 and rel_pos[1] <= ui_area[3])
+
+def start_game(e, click):
+    if not is_click_on_ui(e["ui_trans"], click):
+        return
+
+    global game_started
+    game_started = True
+
 def menu_loop():
     pg.display.set_caption("Far Depths - Chiling at central")
+
+    global game_started
+    game_started = False
 
     title = en.create_entity("menu_title", {
         "ui_trans": [
@@ -173,7 +200,7 @@ def menu_loop():
             (250, -170)
         ],
 
-        "on_frame": rlib.title_renderer,
+        "on_ui_frame": rlib.title_renderer,
     })
 
     start_button = en.create_entity("start_button", {
@@ -183,7 +210,8 @@ def menu_loop():
             (110, -5)
         ],
 
-        "on_frame": rlib.button_renderer,
+        "on_ui_frame": rlib.button_renderer,
+        "on_click": start_game,
         "button_border_size": 5,
         "button_text": "Undock and Start",
     })
@@ -195,23 +223,43 @@ def menu_loop():
             (110, 50)
         ],
 
-        "on_frame": rlib.button_renderer,
+        "on_ui_frame": rlib.button_renderer,
         "button_border_size": 5,
         "button_text": "How to Play",
+    })
+
+    quit_text = en.create_entity("quit_text", {
+        "ui_trans": [
+            (2, 2),
+            (150, 150),
+            (-150, 185)
+        ],
+
+        "on_ui_frame": rlib.text_renderer,
+        "text": "To quit close the window :p",
+        "text_size": 12,
+        "text_color": conf.ui_foreground_faded_color,
     })
 
     while True:
         # events
         for e in pg.event.get():
             if e.type == pg.QUIT:
-                return
+                return None
+            if e.type == pg.MOUSEBUTTONDOWN:
+                en.click_event((e.dict["pos"], e.dict["button"]))
             if e.type == pg.WINDOWRESIZED:
                 ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
 
-        sur = ren.get_surface()
-        sur.fill(conf.empty_color)
+        if game_started:
+            break
 
-        en.render_entities(sur)
+        sur = ren.get_surface()
+        # sur.fill(conf.ui_background_color)
+
+        en.render_ui(sur)
         ren.submit()
 
     en.reset()
+
+    return 1 # switch to in-game loop

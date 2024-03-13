@@ -23,5 +23,13 @@ y = 0
 
 i = 0
 
-mgr.menu_loop()
-# mgr.in_game_loop()
+loop_list = [
+    mgr.menu_loop,
+    mgr.in_game_loop,
+]
+
+while True:
+    if i == None:
+        quit()
+
+    i = loop_list[i]() # call the next requested loop

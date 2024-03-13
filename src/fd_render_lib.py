@@ -157,3 +157,14 @@ def button_renderer(e, sur):
 
     text_dest = (button_render_area[0] + button_render_area[2] // 2 - text_area[2] // 2, button_render_area[1] + button_render_area[3] // 2 - text_area[3] // 2)
     font.render_to(sur, text_dest, button_text, conf.ui_foreground_color, size=12)
+
+def text_renderer(e, sur):
+    render_area = cam.translate_ui(e["ui_trans"])
+
+    text_string = e["text"]
+    text_size = e["text_size"]
+
+    text_area = font.get_rect(text_string, size=text_size)
+
+    text_area = (render_area[0] + render_area[2] // 2 - text_area[2] // 2, render_area[1] + render_area[3] // 2 - text_area[3] // 2)
+    font.render_to(sur, text_area, text_string, e["text_color"], size=text_size)

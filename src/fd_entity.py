@@ -34,6 +34,13 @@ def reset():
 
 def render_entities(surface):
     call_system("on_frame", surface)
+    # call_system("on_late_frame", surface)
+
+def render_ui(surface):
+    call_system("on_ui_frame", surface)
+
+def click_event(click):
+    call_system("on_click", click)
 
 def tick():
     call_system("tick")
