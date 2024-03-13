@@ -19,25 +19,26 @@ def push_info(sender, message):
 def push_warn(sender, message):
     append_log((1, f"> {sender}: {message}"))
 
-    en.get_entity("nls_terminal")["nls_notif_timer"] = [1, 2]
+    en.get_entity("nls_terminal")["nls_notif_timer"][1] = 2
     print(f"> {sender} WARN: {message}")
 
 def push_error(sender, message):
     append_log((2, f"> {sender}: {message}"))
 
-    en.get_entity("nls_terminal")["nls_notif_timer"] = [2, 2]
+    en.get_entity("nls_terminal")["nls_notif_timer"][0] = 2
     print(f"> {sender} ERROR: {message}")
 
 def setup_nls():
     nls = en.create_entity("nls_terminal", {
         "ui_trans": [
-            (False, True), # anchor inverts
+            (False, False), # anchor inverts
             (0, 0),
             (475, 250)
         ],
 
         "on_ui_frame": rlib.nls_renderer,
-        "nls_log_console": log_console
+        "nls_log_console": log_console,
+        "nls_notif_timer": [ None, None ]
     })
 
     log_console.clear()

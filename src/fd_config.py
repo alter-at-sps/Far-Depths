@@ -3,10 +3,10 @@
 # graphics
 
 empty_color = (8, 8, 8)
-fog_color = (16, 16, 16)
+fog_color = (2, 2, 2)
 
-stone_color = (200, 200, 200)
-oxy_color = (245, 245, 245)
+stone_color = (127, 127, 127)
+oxy_color = (200, 200, 200)
 goal_color = (64, 245, 64)
 
 loading_status_texts = [
@@ -19,7 +19,7 @@ loading_status_texts = [
 ]
 
 ui_foreground_color = (255, 255, 255)
-ui_background_color = (8, 8, 8)
+ui_background_color = (4, 4, 4)
 ui_foreground_faded_color = (127, 127, 127)
 
 nls_log_colors = [
@@ -59,8 +59,16 @@ mine_times = [
 ]
 
 move_time = .005
+transfer_time = .05
 
 cam_speed = 500
+
+unit_colors = [
+    (255, 0, 0),
+    (0, 255, 0),
+    (0, 0, 255),
+    (255, 255, 0),
+]
 
 # menu
 

@@ -146,6 +146,13 @@ def recreate_renderer(res, upscale):
 
     gl.glDeleteTextures(1, fd_renderer.pg_fb_texture)
 
+    # recreates rpasses if required
+    for rpass in fd_renderer.render_passes:
+        recreate = rpass.get("recreate")
+
+        if not recreate == None:
+            recreate(rpass, res)
+
     # recreate framebuffers
     fd_renderer.res = (res[0] // upscale, res[1] // upscale)
 

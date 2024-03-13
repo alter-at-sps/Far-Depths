@@ -176,7 +176,7 @@ def level_gen_yield():
             if e.type == pg.WINDOWRESIZED:
                 ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
     
-    ren.get_surface().fill(conf.empty_color)
+    ren.get_surface().fill(conf.ui_background_color)
     en.render_entities(ren.get_surface())
     ren.submit()
 

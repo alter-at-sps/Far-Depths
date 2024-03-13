@@ -296,7 +296,7 @@ def menu_loop():
             break
 
         sur = ren.get_surface()
-        # sur.fill(conf.ui_background_color)
+        sur.fill(conf.ui_background_color)
 
         en.render_ui(sur)
         ren.submit()
