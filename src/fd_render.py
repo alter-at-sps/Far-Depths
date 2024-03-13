@@ -1,7 +1,11 @@
 import pygame as pg
-import pygame.freetype as freetype
-import OpenGL.GL as gl
 import time
+
+try:
+    import OpenGL.GL as gl
+except ImportError:
+    print("ERROR: Failed to import pyopengl. Make sure you have pyopengl module installed (eg. through pip).")
+    quit(-1)
 
 # == Far Depths renderer ==
 # a OpenGL / PyGame hybrid abomination
