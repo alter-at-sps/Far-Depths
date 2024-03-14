@@ -11,6 +11,7 @@ import src.fd_units as un
 import src.fd_astar as astar
 import src.fd_notif as nls
 import src.fd_config as conf
+import src.fd_control_panel as ctl
 
 # == Far Depths Main Event Loop ==
 
@@ -109,6 +110,7 @@ def in_game_loop():
     selected_entity = en.get_entity(f"unit_{selected_unit}")
 
     nls.setup_nls()
+    ctl.setup_ctl_panel()
 
     while True:
         # events
