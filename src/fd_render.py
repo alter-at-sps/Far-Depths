@@ -120,8 +120,13 @@ class FDRenderer:
 
 fd_renderer = FDRenderer((1728, 972))
 
-last_time = time.time()
+# frame time
+last_time = time.perf_counter()
 delta_time = 0
+
+# time spent processing a frame (not including vsync and gpu present)
+start_time = time.perf_counter()
+cpu_time = 0
 
 # == renderer api ==
 
@@ -163,13 +168,17 @@ def recreate_renderer(res, upscale):
     fd_renderer.create_pg_framebuffer()
     fd_renderer.create_offscreen_framebuffers()
 
-# flags that pygame pass is finished, starting post-processing pass
+# flags that pygame pass is finished, starting post-processing pass and update time info
 def submit():
     global delta_time
     global last_time
+    global start_time
+    global cpu_time
 
-    delta_time = time.time() - last_time
-    last_time = time.time()
+    delta_time = time.perf_counter() - last_time
+    last_time = time.perf_counter()
+
+    cpu_time = time.perf_counter() - start_time
 
     fd_renderer.flip_pg_framebuffer()
 
@@ -180,3 +189,6 @@ def submit():
     # frame finished
 
     pg.display.flip() # flips the window (opengl) surface
+
+    # sample *after* vsync flip
+    start_time = time.perf_counter()

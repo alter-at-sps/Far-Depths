@@ -401,11 +401,25 @@ def ctl_renderer(e, sur):
     # title
 
     title_text = data["selected_title"][1]
-
     title_area = font.get_rect(title_text, size=24)
 
     title_area = (panel_render_area[0] + panel_render_area[2] // 2 - title_area[2] // 2, panel_render_area[1] + 60 - title_area[3] // 2)
     font.render_to(sur, title_area, title_text, conf.unit_colors[data["selected_title"][0]], size=24)
+
+    # status
+
+    status_text = data["status"]
+    status_area = font.get_rect(status_text, size=14)
+
+    status_area = (panel_render_area[0] + panel_render_area[2] // 2 - status_area[2] // 2, panel_render_area[1] + 90 - status_area[3] // 2)
+    font.render_to(sur, status_area, status_text, conf.ui_foreground_faded_color, size=14)
+
+# dev frametime display
+
+def frametime_renderer(e, sur):
+    render_area = cam.translate_ui(e["ui_trans"])
+
+    font.render_to(sur, render_area, f"Frame Time: {round(ren.delta_time * 1000, 1)}ms CPU Time: {round(ren.cpu_time * 1000, 1)}ms ({round(ren.cpu_time / ren.delta_time * 100, 1)}% Util)", conf.ui_foreground_faded_color, size=12)
 
 # menu title renderer
 
@@ -432,6 +446,8 @@ def button_renderer(e, sur):
 
     text_dest = (button_render_area[0] + button_render_area[2] // 2 - text_area[2] // 2, button_render_area[1] + button_render_area[3] // 2 - text_area[3] // 2)
     font.render_to(sur, text_dest, button_text, conf.ui_foreground_color, size=12)
+
+# generic text renderer
 
 def text_renderer(e, sur):
     render_area = cam.translate_ui(e["ui_trans"])

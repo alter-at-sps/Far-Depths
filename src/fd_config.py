@@ -84,4 +84,7 @@ secret_titles = [
     "Far Depths - Mining and ignoring all the bugs that don't exists.",
 ]
 
+# dev options
+
 dev_fastmap = False
+dev_frametimes = False

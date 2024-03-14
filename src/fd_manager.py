@@ -21,6 +21,19 @@ def in_game_loop():
 
     pg.display.set_caption("Far Depths - Scanning and Mining" if random.randint(0, 100) > 40 else random.choice(conf.secret_titles)) 
 
+    # dev options
+
+    if conf.dev_frametimes:
+        frametime_display = en.create_entity("frametime_display", {
+            "ui_trans": [
+                (0, 1),
+                (0, 0),
+                (100, 20)
+            ],
+
+            "on_ui_frame": rlib.frametime_renderer,
+        })
+
     # generate base
 
     base_pos = (conf.level_size[0] // 2, conf.level_size[1] // 2)
@@ -67,6 +80,8 @@ def in_game_loop():
             # unit components
 
             "unit_index": i,
+            "pretty_name": f"Unit {i}",
+
             "stored_materials": [
                 None, # air (unused)
                 0, # rock
@@ -91,6 +106,7 @@ def in_game_loop():
     cam_y = 0
 
     selected_unit = 1
+    selected_entity = en.get_entity(f"unit_{selected_unit}")
 
     nls.setup_nls()
 
@@ -131,6 +147,9 @@ def in_game_loop():
         if keys[pg.K_4]:
             selected_unit = 4
 
+        selected_entity = en.get_entity(f"unit_{selected_unit}")
+        ctl.set_selected(selected_entity)
+
         if pg.mouse.get_pressed()[2] and not is_right_pressed:
             is_right_pressed = True
 
@@ -138,13 +157,13 @@ def in_game_loop():
             wm_pos = cam.inverse_translate(mouse_pos)
             gm_pos = lvl.world_to_grid_space(wm_pos)
 
-            un.add_move_task(en.get_entity(f"unit_{selected_unit}"), gm_pos, is_shift)
+            un.add_move_task(selected_entity, gm_pos, is_shift)
         elif not pg.mouse.get_pressed()[2]:
             is_right_pressed = False
 
         if keys[pg.K_r] and not dock_base_pressed:
             dock_base_pressed = True
-            un.add_dock_task(en.get_entity(f"unit_{selected_unit}"), None, is_shift)
+            un.add_dock_task(selected_entity, None, is_shift)
         elif not keys[pg.K_r]:
             dock_base_pressed = False
 
