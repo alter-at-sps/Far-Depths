@@ -1,5 +1,6 @@
 import random
 import time
+import math
 import pygame as pg
 from pygame.math import clamp
 
@@ -27,13 +28,6 @@ level = []
 
 point_size = 20
 mark_margin = 5
-
-level_surface = pg.Surface((conf.level_size[0] * point_size, conf.level_size[1] * point_size))
-level_fow_surface = pg.Surface((conf.level_size[0] * point_size, conf.level_size[1] * point_size), flags=pg.SRCALPHA)
-level_surface_damaged = []
-
-level_surface.fill(conf.empty_color)
-level_fow_surface.fill(conf.fog_color)
 
 # 0 - fully in fog
 # 1 to 18 - out of fog
@@ -144,10 +138,55 @@ def set_circle(pos, radius_squared, val):
                 set_pixel((x, y), val)
 
 def world_to_grid_space(pos):
-    return ((pos[0] + level_surface.get_width() // 2) // point_size, (pos[1] + level_surface.get_height() // 2) // point_size)
+    return ((pos[0] + conf.level_size[0] * point_size // 2) // point_size, (pos[1] + conf.level_size[1] * point_size // 2) // point_size)
 
 def grid_to_world_space(pos):
-    return (pos[0] * point_size - level_surface.get_width() // 2, pos[1]  * point_size - level_surface.get_height() // 2)
+    return (pos[0] * point_size - conf.level_size[0] * point_size // 2, pos[1]  * point_size - conf.level_size[1] * point_size // 2)
+
+# screen relative level pre-rendering mightmares
+def move_level(refresh = True):
+    global level_surface_span
+    global level_surface_grid_space_offset
+    global level_surface_damaged
+
+    if refresh:
+        old_span = tuple(level_surface_span)
+        old_offset = tuple(level_surface_grid_space_offset)
+
+    cam_pos = cam.get_camera()
+    
+    _level_surface_span = (cam_pos[0] - level_surface.get_width() / 2, cam_pos[1] - level_surface.get_height() / 2, cam_pos[0] + level_surface.get_width() / 2, cam_pos[1] + level_surface.get_height() / 2) # pixel coords
+    level_surface_grid_space_offset = (point_size - _level_surface_span[0] % point_size, point_size - _level_surface_span[1] % point_size) # pixel coords
+    level_surface_span = (*world_to_grid_space((math.floor(_level_surface_span[0]), math.floor(_level_surface_span[1]))), *world_to_grid_space((math.ceil(_level_surface_span[2]), math.ceil(_level_surface_span[3])))) # grid coords
+
+    level_surface_damaged = []
+
+    if refresh:
+        move_offset = (int((old_span[0] - level_surface_span[0]) * point_size - (old_offset[0] - level_surface_grid_space_offset[0])), int((old_span[1] - level_surface_span[1]) * point_size - (old_offset[1] - level_surface_grid_space_offset[1])))
+
+        level_surface.scroll(*move_offset)
+        level_fow_surface.scroll(*move_offset)
+
+        for x in range(level_surface_span[0], level_surface_span[2] + 1):
+            for y in range(level_surface_span[1], level_surface_span[3] + 1):
+                if (x < old_span[0] + 1 or x > old_span[2] - 1) or (y < old_span[1] + 1 or y > old_span[3] - 1):
+                    level_surface_damaged.append((x, y))
+
+def resize_level_preren(res):
+    global level_surface
+    global level_fow_surface
+
+    level_surface = pg.Surface((res[0], res[1]))
+    level_fow_surface = pg.Surface((res[0], res[1]), flags=pg.SRCALPHA)
+
+    move_level(False)
+
+    for x in range(level_surface_span[0], level_surface_span[2] + 1):
+            for y in range(level_surface_span[1], level_surface_span[3] + 1):
+                level_surface_damaged.append((x, y))
+
+# init surface
+resize_level_preren(ren.fd_renderer.res)
 
 # generation
 
@@ -218,8 +257,10 @@ def gen_level(seed, fill_percent):
             pregen_map = pickle.load(file)
             file.close()
 
-            global level, level_fow, level_navgrid, level_surface, level_fow_surface
-            level, level_fow, level_navgrid, level_surface, level_fow_surface = (*pregen_map[0:3], pg.image.fromstring(pregen_map[3], (conf.level_size[0] * point_size, conf.level_size[1] * point_size), 'RGB'), pg.image.fromstring(pregen_map[4], (conf.level_size[0] * point_size, conf.level_size[1] * point_size), 'RGBA'))
+            global level, level_fow, level_navgrid
+            level, level_fow, level_navgrid = pregen_map[0:4]
+
+            move_level()
 
             del pregen_map
             return
@@ -252,7 +293,7 @@ def gen_level(seed, fill_percent):
     random_fill(seed, fill_percent)
 
     for i in range(7):
-        refresh_loading_status(i * .5 / 7)
+        refresh_loading_status(i / 7)
 
         smooth_level()
 
@@ -288,7 +329,11 @@ def gen_level(seed, fill_percent):
     # pre render level
         
     # sets its status_text by its own
-    pre_render_level(status)
+    # pre_render_level(status)
+    # add all spaned points as damaged
+    for x in range(level_surface_span[0], level_surface_span[2] + 1):
+        for y in range(level_surface_span[1], level_surface_span[3] + 1):
+            level_surface_damaged.append((x, y))
 
     # clear loading screen scene
 
@@ -298,7 +343,7 @@ def gen_level(seed, fill_percent):
         file = open("dev_map.pickle", mode='bw')
 
         print("dumping dev map...")
-        pickle.dump((level, level_fow, level_navgrid, pg.image.tostring(level_surface, 'RGB'), pg.image.tostring(level_fow_surface, 'RGBA')), file)
+        pickle.dump((level, level_fow, level_navgrid), file)
         file.close()
 
 # checks if the navpoint would be in a wall or in fog    
@@ -434,40 +479,41 @@ color_lib = [
     conf.goal_color,
 ]
 
-def pre_render_level(render_status):
+def pre_render_level():
     global level_surface_damaged
 
     # level_surface.fill((16, 16, 16))
 
     for i, p in enumerate(level_surface_damaged):
         x, y = p
+        sp = cam.translate(grid_to_world_space(p), (point_size, point_size))
+        sp = (sp[0] + point_size / 2, sp[1] + point_size / 2, *sp[2:4])
+
         val = get_pixel(p)
 
-        pg.draw.rect(level_fow_surface, pg.Color(*conf.fog_color, int((18 - min(level_fow[x][y], 18)) * (255 / 18))), (x * point_size, y * point_size, point_size, point_size))
+        pg.draw.rect(level_fow_surface, pg.Color(*conf.fog_color, int((18 - min(level_fow[x][y], 18)) * (255 / 18))), sp)
 
-        pg.draw.rect(level_surface, color_lib[val], (x * point_size, y * point_size, point_size, point_size))
+        pg.draw.rect(level_surface, color_lib[val], sp)
 
         if level_mark[x][y] > 0:
-            pg.draw.rect(level_surface, (255, 0, 0), (x * point_size + mark_margin, y * point_size + mark_margin, point_size - mark_margin * 2, point_size - mark_margin * 2))
+            pg.draw.rect(level_surface, (255, 0, 0), (sp[0] + mark_margin, sp[1] + mark_margin, sp[2] - mark_margin * 2, sp[3] - mark_margin * 2))
         # elif level_navgrid[x][y] == 1:
-            # pg.draw.rect(level_surface, (102, 255, 255), (x * point_size, y * point_size, point_size, point_size))
-
-        if not render_status == None: 
-            # pro rendering on loading time
-            refresh_loading_status(.5 + (i * .5 / len(level_surface_damaged)))
-            
-            level_gen_yield()
+            # pg.draw.rect(level_surface, (102, 255, 255), sp)
 
     level_surface_damaged.clear()
 
 def render_level(sur):
-    if not len(level_surface_damaged) == 0:
-        pre_render_level(None)
+    # for x in range(level_surface_span[0], level_surface_span[2] + 1):
+    #     for y in range(level_surface_span[1], level_surface_span[3] + 1):
+    #         level_surface_damaged.append(inbounds((x, y)))
 
-    sur.blit(level_surface, cam.translate((0, 0), level_surface.get_size()))
+    if not len(level_surface_damaged) == 0:
+        pre_render_level()
+
+    sur.blit(level_surface, (0, 0))
 
 def render_fow(sur):
     if not len(level_surface_damaged) == 0:
-        pre_render_level(None)
+        pre_render_level()
 
-    sur.blit(level_fow_surface, cam.translate((0, 0), level_fow_surface.get_size()), special_flags=pg.BLEND_ALPHA_SDL2)
+    sur.blit(level_fow_surface, (0, 0), special_flags=pg.BLEND_ALPHA_SDL2)

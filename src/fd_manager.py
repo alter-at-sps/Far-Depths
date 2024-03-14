@@ -119,6 +119,7 @@ def in_game_loop():
                 return None
             if e.type == pg.WINDOWRESIZED:
                 ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
+                lvl.resize_level_preren((e.dict["x"], e.dict["y"]))
 
         # user input processing
 
@@ -128,17 +129,23 @@ def in_game_loop():
 
         if keys[pg.K_w]:
             cam_y -= conf.cam_speed * ren.delta_time
+            cam.set_camera((int(cam_x), int(cam_y)))
+            lvl.move_level()
         
         if keys[pg.K_s]:
             cam_y += conf.cam_speed * ren.delta_time
+            cam.set_camera((int(cam_x), int(cam_y)))
+            lvl.move_level()
         
         if keys[pg.K_d]:
             cam_x += conf.cam_speed * ren.delta_time
+            cam.set_camera((int(cam_x), int(cam_y)))
+            lvl.move_level()
         
         if keys[pg.K_a]:
             cam_x -= conf.cam_speed * ren.delta_time
-
-        cam.set_camera((int(cam_x), int(cam_y)))
+            cam.set_camera((int(cam_x), int(cam_y)))
+            lvl.move_level()
 
         if keys[pg.K_1]:
             selected_unit = 1
