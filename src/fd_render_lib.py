@@ -153,7 +153,7 @@ def bloom_frame(rpass, in_tex, out_fb):
 
 def bloom_cleanup(rpass, full = True):
     gl.glDeleteTextures(len(rpass["mip_tex_bufs"]), rpass["mip_tex_bufs"])
-    gl.glDeleteFramebuffers(1, rpass["bloom_fb"])
+    gl.glDeleteFramebuffers(1, [rpass["bloom_fb"]])
 
     if full:
         gl.glDeleteProgram(rpass["downsample_program"])

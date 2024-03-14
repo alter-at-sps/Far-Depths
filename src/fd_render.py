@@ -153,7 +153,7 @@ def recreate_renderer(res, upscale):
     gl.glDeleteFramebuffers(2, fd_renderer.fbs)
     gl.glDeleteTextures(2, fd_renderer.fb_attachments)
 
-    gl.glDeleteTextures(1, fd_renderer.pg_fb_texture)
+    gl.glDeleteTextures(1, [fd_renderer.pg_fb_texture])
 
     # recreates rpasses if required
     for rpass in fd_renderer.render_passes:
