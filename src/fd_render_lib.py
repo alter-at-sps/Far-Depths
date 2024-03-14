@@ -151,15 +151,20 @@ def bloom_frame(rpass, in_tex, out_fb):
 
     gl.glUseProgram(0)
 
-def bloom_cleanup(rpass):
+def bloom_cleanup(rpass, full = True):
     gl.glDeleteTextures(len(rpass["mip_tex_bufs"]), rpass["mip_tex_bufs"])
     gl.glDeleteFramebuffers(1, rpass["bloom_fb"])
+
+    if full:
+        gl.glDeleteProgram(rpass["downsample_program"])
+        gl.glDeleteProgram(rpass["upsample_program"])
+        gl.glDeleteProgram(rpass["copy_program"])
 
 def bloom_recreate(rpass, res):
     # delete old resources
 
     if not rpass.get("bloom_fb") == None:
-        bloom_cleanup(rpass)
+        bloom_cleanup(rpass, False)
 
     # create bloom mips
 

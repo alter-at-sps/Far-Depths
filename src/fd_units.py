@@ -93,6 +93,9 @@ def add_dock_task(e, sub_index, append_task):
 currently_being_mined_global = set()
 
 def set_next_to_mine(e, finished_point, mining_queue: set):
+    if len(mining_queue) == 0:
+        return
+    
     # first try neighboring points
 
     for p in [ (1, 0), (0, 1), (-1, 0), (0, -1) ]:
@@ -233,9 +236,9 @@ def unit_tick(e: dict):
 
     if not target == None and (target in currently_being_mined_global or lvl.get_pixel(target) == 0):    
         mining_queue = e["mining_queue"]
-        if not len(mining_queue) == 0:
-            set_next_to_mine(e, e["grid_trans"], mining_queue)
-        else:
+        set_next_to_mine(e, e["grid_trans"], mining_queue)
+        
+        if len(mining_queue) == 0:
             e.pop("path_target_mine")
 
     # path following update
