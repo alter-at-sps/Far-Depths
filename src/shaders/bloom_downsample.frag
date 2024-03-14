@@ -1,4 +1,4 @@
-#version 450
+#version 420
 
 // based on the PBR bloom implementation done on https://learnopengl.com/Guest-Articles/2022/Phys.-Based-Bloom
 // which is based on the Call Of Duty Siggraph 2014 bloom implementation

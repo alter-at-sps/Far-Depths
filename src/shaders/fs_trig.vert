@@ -1,8 +1,8 @@
-#version 450
+#version 420
 
 // a basic common hardcoded full screen triangle vs
 
-vec4 verts[] = {
+vec4 verts[3] = {
     vec4(-1, -1, 0, 1),
     vec4(-1, 5, 0, 1),
     vec4(5, -1, 0, 1),
