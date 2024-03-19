@@ -76,7 +76,6 @@ def init_level():
 def get_pixel(pos):
     return level[pos[0]][pos[1]]
 
-# note: do not hold on to the level buffer reference for more than a frame (could cause missed writes)
 def get_level_buffer():
     return level
 
@@ -107,8 +106,6 @@ def get_level_buffer_navgrid():
     return level
 
 def set_pixel_navgrid(pos, val):
-    # global level_surface_damaged
-    # level_surface_damaged.append(pos)
     level_navgrid[pos[0]][pos[1]] = val
 
 # mark
@@ -132,8 +129,8 @@ def offset_by_pixel_mark(pos, val):
 # level utils
 
 def set_circle(pos, radius_squared, val):
-    for x in range(pos[0] - radius_squared, pos[1] + radius_squared):
-        for y in range(pos[0] - radius_squared, pos[1] + radius_squared):
+    for x in range(pos[0] - radius_squared, pos[0] + radius_squared):
+        for y in range(pos[1] - radius_squared, pos[1] + radius_squared):
             if (pos[0] - x) ** 2 + (pos[1] - y) ** 2 < radius_squared:
                 set_pixel((x, y), val)
 
@@ -329,13 +326,11 @@ def gen_level(seed, fill_percent):
         level_gen_yield()
 
     # pre render level
-        
-    # sets its status_text by its own
-    # pre_render_level(status)
-    # add all spaned points as damaged
-    for x in range(level_surface_span[0], level_surface_span[2] + 1):
-        for y in range(level_surface_span[1], level_surface_span[3] + 1):
-            level_surface_damaged.append((x, y))
+
+    # refresh level pre-rendering buffer 
+    resize_level_preren(ren.fd_renderer.res)
+
+    pre_render_level()
 
     # clear loading screen scene
 
@@ -484,9 +479,9 @@ color_lib = [
 def pre_render_level():
     global level_surface_damaged
 
-    # level_surface.fill((16, 16, 16))
-
     for i, p in enumerate(level_surface_damaged):
+        p = inbounds(p)
+        
         x, y = p
         sp = cam.translate(grid_to_world_space(p), (point_size, point_size))
         sp = (sp[0] + point_size / 2, sp[1] + point_size / 2, *sp[2:4])
@@ -505,10 +500,6 @@ def pre_render_level():
     level_surface_damaged.clear()
 
 def render_level(sur):
-    # for x in range(level_surface_span[0], level_surface_span[2] + 1):
-    #     for y in range(level_surface_span[1], level_surface_span[3] + 1):
-    #         level_surface_damaged.append(inbounds((x, y)))
-
     if not len(level_surface_damaged) == 0:
         pre_render_level()
 
