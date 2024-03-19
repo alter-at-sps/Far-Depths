@@ -195,7 +195,8 @@ def unit_tick(e: dict):
                 lvl.set_pixel_navgrid(task[2], 1) # expand navgrid
                 lvl.set_pixel_mark(task[2], 0) # remove mining overlay
 
-                lvl.unfog_area([ task[2] ], 1) # trigger incremental flood fill
+                lvl.unfog_area([ task[2] ], 18) # trigger incremental flood fill
+                # lvl.set_pixel_fow(task[2], 18) # make sure points is fully visible
 
                 currently_being_mined_global.remove(task[2])
 
