@@ -7,18 +7,16 @@ def set_selected(e):
 def setup_ctl_panel():
     ctl = en.create_entity("control_panel",{
         "ui_trans": [
-            (True, False),
+            (1, 1),
             (0, 0),
-            (300, 500)
+            (300, 400)
         ],
 
         "on_ui_frame": rlib.ctl_renderer,
         "tick": ctl_tick,
         "selected_entity": None,
 
-        "panel_data": {
-            "selected_title": (0, "unit name"),
-        }
+        "panel_data": {}
     })
 
 def ctl_tick(e):
@@ -49,6 +47,8 @@ def ctl_tick(e):
                 raise ValueError("unknown busy task type in ctl_tick")
         elif sel["already_idle"]:
             data["status"] = "Idle"
+        
+        data["materials"] = e["stored_materials"]
     else:
         data["selected_title"] = (sel["name_color"], sel["pretty_name"])
 

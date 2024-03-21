@@ -12,6 +12,7 @@ import src.fd_astar as astar
 import src.fd_notif as nls
 import src.fd_config as conf
 import src.fd_control_panel as ctl
+import src.fd_timer as ti
 
 # == Far Depths Main Event Loop ==
 
@@ -27,7 +28,7 @@ def in_game_loop():
     if conf.dev_frametimes:
         frametime_display = en.create_entity("frametime_display", {
             "ui_trans": [
-                (0, 1),
+                (0, 0),
                 (0, 0),
                 (100, 20)
             ],
@@ -49,14 +50,19 @@ def in_game_loop():
         "on_frame": rlib.rect_renderer,
         "rect_color": (254, 254, 254),
 
+        "tick": un.base_tick,
+
+        # base components
+
         "stored_materials": [
             None, # air (unused)
             0, # rock
-            0, # oxy
+            25, # oxy
             0, # goal
         ],
 
-        # "tick": None,
+        "power_usage": 1, # initial power usage
+        "busy_generating": 0,
     })
 
     lvl.set_circle(base_pos, 100, 0) # clear spawn location
@@ -97,6 +103,8 @@ def in_game_loop():
             "already_idle": True,
         })
 
+        base["power_usage"] += 2
+
     is_dragging = False
     drag_start_pos = None
 
@@ -111,6 +119,7 @@ def in_game_loop():
 
     nls.setup_nls()
     ctl.setup_ctl_panel()
+    ti.setup_timer()
 
     while True:
         # events

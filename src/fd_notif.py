@@ -31,7 +31,7 @@ def push_error(sender, message):
 def setup_nls():
     nls = en.create_entity("nls_terminal", {
         "ui_trans": [
-            (False, False), # anchor inverts
+            (0, 1), # anchor inverts
             (0, 0),
             (475, 250)
         ],

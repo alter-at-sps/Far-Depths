@@ -34,7 +34,8 @@ nls_log_line_size = 14
 nls_outline_margin = 10
 nls_outline_width = 10
 
-ctl_border_size = 10
+ctl_border_size = 5
+timer_border_size = 5
 
 # level gen
 
@@ -49,7 +50,7 @@ oxy_deposit_size_min_max = (4, 10)
 num_of_goal_deposits_min_max = (20, 30)
 goal_deposit_size_min_max = (6, 12)
 
-# unit behaviour
+# game behaviour
 
 mine_times = [
     0, # air (unused)
@@ -69,6 +70,9 @@ unit_colors = [
     (0, 0, 255),
     (255, 255, 0),
 ]
+
+oxy_to_power_time = 30
+timer_eta_zero_offset = 5
 
 # menu
 

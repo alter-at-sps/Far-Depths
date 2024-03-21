@@ -419,6 +419,45 @@ def ctl_renderer(e, sur):
     status_area = (panel_render_area[0] + panel_render_area[2] // 2 - status_area[2] // 2, panel_render_area[1] + 90 - status_area[3] // 2)
     font.render_to(sur, status_area, status_text, conf.ui_foreground_faded_color, size=14)
 
+# game timer renderer
+
+def timer_renderer(e, sur):
+    render_area = cam.translate_ui(e["ui_trans"])
+
+    timer_render_area = (render_area[0] + conf.timer_border_size, render_area[1] + conf.timer_border_size, render_area[2] - conf.timer_border_size * 2, render_area[3] - conf.timer_border_size * 2)
+
+    # border and timer background
+    pg.draw.rect(sur, conf.ui_foreground_color, render_area)
+    pg.draw.rect(sur, conf.ui_background_color, timer_render_area)
+
+    # draw eta
+
+    eta_text = f"{int(e['eta'] // 60):0=2}:{int(e['eta'] % 60):0=2}"
+    
+    eta_area = font.get_rect(eta_text, size=22)
+    eta_area = (timer_render_area[0] + 25, timer_render_area[1] + 30 - eta_area[3] // 2)
+
+    font.render_to(sur, eta_area, eta_text, conf.ui_foreground_color, size=22)
+
+    eta_tag_area = font.get_rect("power eta:", size=10)
+    eta_tag_area = (timer_render_area[0] + 65 - eta_tag_area[2] // 2, timer_render_area[1] + 10 - eta_tag_area[3] // 2)
+
+    font.render_to(sur, eta_tag_area, "power eta:", conf.ui_foreground_color, size=10)
+
+    # draw goal mat
+
+    tag_text = f"{int(e['goal_mat_count'])}"
+    
+    tag_area = font.get_rect(tag_text, size=20)
+    tag_area = (timer_render_area[0] + 158 - tag_area[2] // 2, timer_render_area[1] + 30 - tag_area[3] // 2)
+
+    font.render_to(sur, tag_area, tag_text, conf.ui_foreground_color, size=20)
+
+    tag_tag_area = font.get_rect("goal:", size=10)
+    tag_tag_area = (timer_render_area[0] + 158 - tag_tag_area[2] // 2, timer_render_area[1] + 10 - tag_tag_area[3] // 2)
+
+    font.render_to(sur, tag_tag_area, "goal:", conf.ui_foreground_color, size=10)
+
 # dev frametime display
 
 def frametime_renderer(e, sur):

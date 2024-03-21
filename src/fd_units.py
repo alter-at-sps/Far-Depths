@@ -5,7 +5,7 @@ import src.fd_notif as nls
 import src.fd_render as ren
 import src.fd_config as conf
 
-# == Far Depths Unit AI ==
+# == Far Depths Unit AI and Base Controller ==
 
 # task subroutines
 
@@ -323,3 +323,20 @@ def unit_tick(e: dict):
 
         else:
             raise ValueError("invalid task type on task_setup")
+
+# base tick
+
+def base_tick(e: dict):
+    # update power generation
+
+    e["busy_generating"] -= ren.delta_time
+
+    if e["busy_generating"] <= 0:
+        base_mats = e["stored_materials"]
+        base_mats[2] -= 1
+
+        if base_mats[2] <= 0:
+            print("power lost")
+            quit() # FIXME: trigger lost game
+
+        e["busy_generating"] = conf.oxy_to_power_time / e["power_usage"]
