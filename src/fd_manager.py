@@ -143,25 +143,28 @@ def in_game_loop():
 
         is_shift = keys[pg.K_LSHIFT]
 
+        old_cam = (cam_x, cam_y)
+
         if keys[pg.K_w]:
             cam_y -= conf.cam_speed * ren.delta_time
             cam.set_camera((int(cam_x), int(cam_y)))
-            lvl.move_level()
         
         if keys[pg.K_s]:
             cam_y += conf.cam_speed * ren.delta_time
             cam.set_camera((int(cam_x), int(cam_y)))
-            lvl.move_level()
         
         if keys[pg.K_d]:
             cam_x += conf.cam_speed * ren.delta_time
             cam.set_camera((int(cam_x), int(cam_y)))
-            lvl.move_level()
         
         if keys[pg.K_a]:
             cam_x -= conf.cam_speed * ren.delta_time
             cam.set_camera((int(cam_x), int(cam_y)))
-            lvl.move_level()
+
+        cam_offset = (cam_x - old_cam[0], cam_y - old_cam[1])
+
+        if not cam_offset[0] == 0 or not cam_offset[1] == 0:
+            lvl.invalidate_level(cam_offset)
 
         if click_consumed:
             is_pressed = True

@@ -141,7 +141,7 @@ def grid_to_world_space(pos):
     return (pos[0] * point_size - conf.level_size[0] * point_size // 2, pos[1]  * point_size - conf.level_size[1] * point_size // 2)
 
 # screen relative level pre-rendering mightmares
-def move_level(refresh = True):
+def invalidate_level(offset, refresh = True):
     global level_surface_span
     global level_surface_grid_space_offset
     global level_surface_damaged
@@ -164,11 +164,11 @@ def move_level(refresh = True):
         level_surface.scroll(*move_offset)
         level_fow_surface.scroll(*move_offset)
 
-        redraw_dist = 2
+        redraw_dist = (abs(offset[0]) / point_size, abs(offset[1]) / point_size)
 
         for x in range(level_surface_span[0], level_surface_span[2] + 1):
             for y in range(level_surface_span[1], level_surface_span[3] + 1):
-                if (x < old_span[0] + redraw_dist or x > old_span[2] - redraw_dist) or (y < old_span[1] + redraw_dist or y > old_span[3] - redraw_dist):
+                if (x < old_span[0] + redraw_dist[0] or x > old_span[2] - redraw_dist[0]) or (y < old_span[1] + redraw_dist[1] or y > old_span[3] - redraw_dist[1]):
                     level_surface_damaged.append((x, y))
 
 def resize_level_preren(res):
@@ -178,7 +178,7 @@ def resize_level_preren(res):
     level_surface = pg.Surface((res[0], res[1]))
     level_fow_surface = pg.Surface((res[0], res[1]), flags=pg.SRCALPHA)
 
-    move_level(False)
+    invalidate_level((0, 0), False)
 
     for x in range(level_surface_span[0], level_surface_span[2] + 1):
             for y in range(level_surface_span[1], level_surface_span[3] + 1):
@@ -259,7 +259,7 @@ def gen_level(seed, fill_percent):
             global level, level_fow, level_navgrid
             level, level_fow, level_navgrid = pregen_map[0:4]
 
-            move_level()
+            invalidate_level((0, 0))
 
             del pregen_map
             return
