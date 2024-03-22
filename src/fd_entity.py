@@ -27,6 +27,23 @@ def call_system(s_name, *args):
                 print(f"An Exception occured while system \"{s_name}\" was working with entity \"{name}\"!")
                 raise
 
+# calls a system (component) on every entity if it has that system and stop if system returns true
+def call_system_consuming(s_name, *args):
+    for name, e in entity_registry.items():
+        s = e.get(s_name)
+
+        if not s == None:
+            try:
+                c = s(e, *args)
+
+                if c:
+                    return True
+            except:
+                print(f"An Exception occured while system \"{s_name}\" was working with entity \"{name}\"!")
+                raise
+    
+    return False
+
 def reset():
     entity_registry.clear()
 
@@ -40,7 +57,7 @@ def render_ui(surface):
     call_system("on_ui_frame", surface)
 
 def click_event(click):
-    call_system("on_click", click)
+    return call_system_consuming("on_click", click)
 
 def tick():
     call_system("tick")

@@ -27,6 +27,14 @@ def translate_ui(trans):
 
     return (min(anchored_points[0], anchored_points[2]), min(anchored_points[1], anchored_points[3]), max(anchored_points[0], anchored_points[2]) - min(anchored_points[0], anchored_points[2]), max(anchored_points[1], anchored_points[3]) - min(anchored_points[1], anchored_points[3]))
 
+def is_click_on_ui(t, click):
+    pos = click[0]
+    ui_area = translate_ui(t)
+
+    rel_pos = (pos[0] - ui_area[0], pos[1] - ui_area[1])
+
+    return (rel_pos[0] >= 0 and rel_pos[0] <= ui_area[2]) and (rel_pos[1] >= 0 and rel_pos[1] <= ui_area[3])
+
 def inverse_translate(pos):
     # translates a screen space position to world space
     return (pos[0] + camera_translation[0] - ren.get_surface().get_width() // 2, pos[1] + camera_translation[1] - ren.get_surface().get_height() // 2)

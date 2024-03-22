@@ -9,24 +9,24 @@ stone_color = (127, 127, 127)
 oxy_color = (200, 200, 200)
 goal_color = (64, 245, 64)
 
-loading_status_texts = [
+loading_status_texts = (
     "> Undocking...",
     "> Searching for a suitable location...",
     "> Traveling to location...",
     "> Searching for a landing location...",
     "> Landing at location...",
     "> Get ready for deployment!"
-]
+)
 
 ui_foreground_color = (255, 255, 255)
 ui_background_color = (4, 4, 4)
 ui_foreground_faded_color = (127, 127, 127)
 
-nls_log_colors = [
+nls_log_colors = (
     (225, 225, 225),
     (200, 200, 64),
     (255, 16, 16)
-]
+)
 
 nls_border_size = 5
 nls_cursor_margin = 5
@@ -35,6 +35,8 @@ nls_outline_margin = 10
 nls_outline_width = 10
 
 ctl_border_size = 5
+ctl_button_border_size = 3
+
 timer_border_size = 5
 
 # level gen
@@ -52,31 +54,51 @@ goal_deposit_size_min_max = (6, 12)
 
 # game behaviour
 
-mine_times = [
+mine_times = (
     0, # air (unused)
     .02, # stone
     .15, # oxy
     1, # goal
-]
+)
 
 move_time = .005
 transfer_time = .05
 
 cam_speed = 500
 
-unit_colors = [
+unit_colors = (
     (255, 0, 0),
     (0, 255, 0),
-    (0, 0, 255),
+    (0, 255, 255),
     (255, 255, 0),
-]
+)
 
 oxy_to_power_time = 30
 timer_eta_zero_offset = 5
 
+initial_base_oxy_count = 25
+
+struct_power_usages = (
+    1,
+    2,
+    8
+)
+
+struct_build_times = (
+    5,
+    8,
+    12
+)
+
+struct_build_costs = (
+    (5, 0),
+    (10, 0),
+    (15, 5)
+)
+
 # menu
 
-secret_titles = [
+secret_titles = (
     "Far Depths - Mining and stayin' alive, stayin' alive",
     "Far Depths - Never gonna mine you up",
     "Far Depths - Failing to reach centrals weekly quota",
@@ -86,9 +108,9 @@ secret_titles = [
     "Far Depths - Mining in an OSHA approved definitely non-lethal submersible",
     "Far Depths - Mining with only 24 new warnings per second",
     "Far Depths - Mining and ignoring all the bugs that don't exists.",
-]
+)
 
 # dev options
 
-dev_fastmap = False
-dev_frametimes = False
+dev_fastmap = True
+dev_frametimes = True

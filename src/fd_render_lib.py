@@ -303,9 +303,12 @@ def rect_renderer(e, sur):
 
     pg.draw.rect(sur, e["rect_color"], render_area)
 
-# loading screen status renderer
+# ui globals
 
 font = freetype.Font("./assets/font/amiga4ever pro2.ttf", 16)
+ui_mode = 0
+
+# loading screen status renderer
 
 loading_color = (255, 255, 255)
 
@@ -327,6 +330,9 @@ def loading_status_renderer(e, sur):
 # nls renderer
 
 def nls_renderer(e, sur):
+    if not ui_mode == 0:
+        return
+
     t = e["ui_trans"]
 
     render_area = cam.translate_ui(t)
@@ -389,6 +395,9 @@ def nls_renderer(e, sur):
 # ctl renderer
 
 def ctl_renderer(e, sur):
+    if not ui_mode == 0:
+        return
+
     t = e["ui_trans"]
     data = e["panel_data"]
 
@@ -419,9 +428,60 @@ def ctl_renderer(e, sur):
     status_area = (panel_render_area[0] + panel_render_area[2] // 2 - status_area[2] // 2, panel_render_area[1] + 90 - status_area[3] // 2)
     font.render_to(sur, status_area, status_text, conf.ui_foreground_faded_color, size=14)
 
+    # build button
+
+    #build_border_area = (panel_render_area[0] + 20, status_area[1] + 30, panel_render_area[2] - 40, 40)
+    build_border_area = cam.translate_ui(e["build_ui_trans"])
+    build_area = (build_border_area[0] + conf.ctl_button_border_size, build_border_area[1] + conf.ctl_button_border_size, build_border_area[2] - conf.ctl_button_border_size * 2, build_border_area[3] - conf.ctl_button_border_size * 2)
+
+    pg.draw.rect(sur, conf.ui_foreground_color, build_border_area)
+    pg.draw.rect(sur, conf.ui_background_color, build_area)
+
+    build_text_area = font.get_rect("Build structure [b]", size=12)
+    build_text_area = (build_area[0] + build_area[2] // 2 - build_text_area[2] // 2, build_area[1] + build_area[3] // 2 - build_text_area[3] // 2)
+
+    font.render_to(sur, build_text_area, "Build structure [b]", conf.ui_foreground_color, size=12)
+
+    # dock button
+
+    dock_border_area = cam.translate_ui(e["dock_ui_trans"])
+    dock_area = (dock_border_area[0] + conf.ctl_button_border_size, dock_border_area[1] + conf.ctl_button_border_size, dock_border_area[2] - conf.ctl_button_border_size * 2, dock_border_area[3] - conf.ctl_button_border_size * 2)
+
+    pg.draw.rect(sur, conf.ui_foreground_color, dock_border_area)
+    pg.draw.rect(sur, conf.ui_background_color, dock_area)
+
+    dock_text_area = font.get_rect("Dock to base [r]", size=12)
+    dock_text_area = (dock_area[0] + dock_area[2] // 2 - dock_text_area[2] // 2, dock_area[1] + dock_area[3] // 2 - dock_text_area[3] // 2)
+
+    font.render_to(sur, dock_text_area, "Dock to base [r]", conf.ui_foreground_color, size=12)
+
+    # materials
+
+    mats = data.get("materials")
+    if not mats == None:
+        # materials tag
+
+        tag_area = [panel_render_area[0] + 40, dock_border_area[1] + 50]
+
+        font.render_to(sur, tag_area, "stored materials:", conf.ui_foreground_faded_color, size=10)
+
+        # materials
+
+        tag_area[1] += 15
+        font.render_to(sur, tag_area, f" - stone: {mats[1]}", conf.ui_foreground_faded_color, size=10)
+
+        tag_area[1] += 15
+        font.render_to(sur, tag_area, f" - oxy: {mats[2]}", conf.ui_foreground_faded_color, size=10)
+
+        tag_area[1] += 15
+        font.render_to(sur, tag_area, f" - goal: {mats[3]}", conf.ui_foreground_faded_color, size=10)
+
 # game timer renderer
 
 def timer_renderer(e, sur):
+    if not ui_mode == 0:
+        return
+
     render_area = cam.translate_ui(e["ui_trans"])
 
     timer_render_area = (render_area[0] + conf.timer_border_size, render_area[1] + conf.timer_border_size, render_area[2] - conf.timer_border_size * 2, render_area[3] - conf.timer_border_size * 2)
