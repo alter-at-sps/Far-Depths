@@ -1,5 +1,6 @@
 import src.fd_render_lib as rlib
 import src.fd_entity as en
+import src.fd_camera as cam
 
 # == Far Depths Notifications and (in-game) Logs ==
 
@@ -37,8 +38,12 @@ def setup_nls():
         ],
 
         "on_ui_frame": rlib.nls_renderer,
+        "on_click": nls_on_click,
         "nls_log_console": log_console,
         "nls_notif_timer": [ None, None ]
     })
 
     log_console.clear()
+
+def nls_on_click(e: dict, click):
+    return cam.is_click_on_ui(e["ui_trans"], click)

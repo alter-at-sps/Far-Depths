@@ -13,6 +13,7 @@ import src.fd_notif as nls
 import src.fd_config as conf
 import src.fd_control_panel as ctl
 import src.fd_timer as ti
+import src.fd_struct as st
 
 # == Far Depths Main Event Loop ==
 
@@ -57,7 +58,7 @@ def in_game_loop():
         "stored_materials": [
             None, # air (unused)
             0, # rock
-            25, # oxy
+            conf.initial_base_oxy_count, # oxy
             0, # goal
         ],
 
@@ -106,6 +107,7 @@ def in_game_loop():
         base["power_usage"] += 2
 
     is_dragging = False
+    is_pressed = False
     drag_start_pos = None
 
     is_right_pressed = False
@@ -120,12 +122,17 @@ def in_game_loop():
     nls.setup_nls()
     ctl.setup_ctl_panel()
     ti.setup_timer()
+    st.setup_struct_build_ghost()
 
     while True:
+        click_consumed = False
+
         # events
         for e in pg.event.get():
             if e.type == pg.QUIT:
                 return None
+            if e.type == pg.MOUSEBUTTONDOWN:
+                click_consumed = en.click_event((e.dict["pos"], e.dict["button"]))
             if e.type == pg.WINDOWRESIZED:
                 ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
                 lvl.resize_level_preren((e.dict["x"], e.dict["y"]))
@@ -156,72 +163,95 @@ def in_game_loop():
             cam.set_camera((int(cam_x), int(cam_y)))
             lvl.move_level()
 
-        if keys[pg.K_1]:
-            selected_unit = 1
-        if keys[pg.K_2]:
-            selected_unit = 2
-        if keys[pg.K_3]:
-            selected_unit = 3
-        if keys[pg.K_4]:
-            selected_unit = 4
+        if click_consumed:
+            is_pressed = True
 
-        selected_entity = en.get_entity(f"unit_{selected_unit}")
-        ctl.set_selected(selected_entity)
+        if rlib.ui_mode == 0: # normal mode
+            if keys[pg.K_1]:
+                selected_unit = 1
+            if keys[pg.K_2]:
+                selected_unit = 2
+            if keys[pg.K_3]:
+                selected_unit = 3
+            if keys[pg.K_4]:
+                selected_unit = 4
 
-        if pg.mouse.get_pressed()[2] and not is_right_pressed:
-            is_right_pressed = True
+            selected_entity = en.get_entity(f"unit_{selected_unit}")
+            ctl.set_selected(selected_entity)
 
-            mouse_pos = pg.mouse.get_pos()
-            wm_pos = cam.inverse_translate(mouse_pos)
-            gm_pos = lvl.world_to_grid_space(wm_pos)
+            if pg.mouse.get_pressed()[2] and not is_right_pressed:
+                is_right_pressed = True
 
-            un.add_move_task(selected_entity, gm_pos, is_shift)
-        elif not pg.mouse.get_pressed()[2]:
-            is_right_pressed = False
+                mouse_pos = pg.mouse.get_pos()
+                wm_pos = cam.inverse_translate(mouse_pos)
+                gm_pos = lvl.world_to_grid_space(wm_pos)
 
-        if keys[pg.K_r] and not dock_base_pressed:
-            dock_base_pressed = True
-            un.add_dock_task(selected_entity, None, is_shift)
-        elif not keys[pg.K_r]:
-            dock_base_pressed = False
+                un.add_move_task(selected_entity, gm_pos, is_shift)
+            elif not pg.mouse.get_pressed()[2]:
+                is_right_pressed = False
 
-        # drag processing
+            if keys[pg.K_e]:
+                rlib.ui_mode = 1
 
-        # not None if currently dragging
-        drag_area = None
+            if keys[pg.K_r] and not dock_base_pressed:
+                dock_base_pressed = True
+                un.add_dock_task(selected_entity, None, is_shift)
+            elif not keys[pg.K_r]:
+                dock_base_pressed = False
 
-        # not None if finished dragging this frame
-        final_drag_area = None
+            # drag processing
 
-        if not is_dragging and pg.mouse.get_pressed()[0]:
-            # started dragging
+            # not None if currently dragging
+            drag_area = None
 
-            is_dragging = True
+            # not None if finished dragging this frame
+            final_drag_area = None
 
-            drag_start_pos = pg.mouse.get_pos()
+            if not is_dragging and pg.mouse.get_pressed()[0] and not is_pressed:
+                # started dragging
 
-        elif is_dragging and not pg.mouse.get_pressed()[0]:
-            # stopped dragging
+                is_dragging = True
+                is_pressed = True
 
-            is_dragging = False
+                drag_start_pos = pg.mouse.get_pos()
 
-            final_drag_area = ((min(drag_start_pos[0], pg.mouse.get_pos()[0]), min(drag_start_pos[1], pg.mouse.get_pos()[1])), (max(drag_start_pos[0], pg.mouse.get_pos()[0]), max(drag_start_pos[1], pg.mouse.get_pos()[1])))
-            drag_start_pos = None
+            elif is_dragging and not pg.mouse.get_pressed()[0]:
+                # stopped dragging
 
-        if is_dragging:
-            drag_area = ((min(drag_start_pos[0], pg.mouse.get_pos()[0]), min(drag_start_pos[1], pg.mouse.get_pos()[1])), (max(drag_start_pos[0], pg.mouse.get_pos()[0]), max(drag_start_pos[1], pg.mouse.get_pos()[1])))
+                is_dragging = False
 
-        # mark area for mining
-        if not final_drag_area == None:
-            w_drag_area = (cam.inverse_translate(final_drag_area[0]), cam.inverse_translate(final_drag_area[1]))
-            g_drag_area = (lvl.world_to_grid_space(w_drag_area[0]), lvl.world_to_grid_space(w_drag_area[1]))
+                final_drag_area = ((min(drag_start_pos[0], pg.mouse.get_pos()[0]), min(drag_start_pos[1], pg.mouse.get_pos()[1])), (max(drag_start_pos[0], pg.mouse.get_pos()[0]), max(drag_start_pos[1], pg.mouse.get_pos()[1])))
+                drag_start_pos = None
 
-            mining_queue = un.create_mining_queue(g_drag_area)
+            if is_dragging:
+                drag_area = ((min(drag_start_pos[0], pg.mouse.get_pos()[0]), min(drag_start_pos[1], pg.mouse.get_pos()[1])), (max(drag_start_pos[0], pg.mouse.get_pos()[0]), max(drag_start_pos[1], pg.mouse.get_pos()[1])))
+
+            # mark area for mining
+            if not final_drag_area == None:
+                w_drag_area = (cam.inverse_translate(final_drag_area[0]), cam.inverse_translate(final_drag_area[1]))
+                g_drag_area = (lvl.world_to_grid_space(w_drag_area[0]), lvl.world_to_grid_space(w_drag_area[1]))
+
+                mining_queue = un.create_mining_queue(g_drag_area)
 
 
-            if not len(mining_queue) == 0:
-                # lvl.set_pixels_for_mining(mining_queue)
-                un.add_mining_task(en.get_entity(f"unit_{selected_unit}"), mining_queue, is_shift)
+                if not len(mining_queue) == 0:
+                    # lvl.set_pixels_for_mining(mining_queue)
+                    un.add_mining_task(en.get_entity(f"unit_{selected_unit}"), mining_queue, is_shift)
+        
+        elif rlib.ui_mode == 1: # unit build mode
+            if keys[pg.K_ESCAPE]:
+                rlib.ui_mode = 0
+
+            if not click_consumed and not is_pressed and pg.mouse.get_pressed()[0]:
+                w_struct_loc = cam.inverse_translate(pg.mouse.get_pos())
+                g_struct_loc = lvl.world_to_grid_space(w_struct_loc)
+
+                un.add_build_task(selected_entity, g_struct_loc, en.get_entity("control_panel")["selected_build"], is_shift)
+
+                rlib.ui_mode = 0
+
+        if is_pressed and not pg.mouse.get_pressed()[0]:
+            is_pressed = False
 
         # main game update
 
@@ -250,16 +280,8 @@ def in_game_loop():
 
 game_started = False
 
-def is_click_on_ui(t, click):
-    pos = click[0]
-    ui_area = cam.translate_ui(t)
-
-    rel_pos = (pos[0] - ui_area[0], pos[1] - ui_area[1])
-
-    return (rel_pos[0] >= 0 and rel_pos[0] <= ui_area[2]) and (rel_pos[1] >= 0 and rel_pos[1] <= ui_area[3])
-
 def start_game(e, click):
-    if not is_click_on_ui(e["ui_trans"], click):
+    if not cam.is_click_on_ui(e["ui_trans"], click):
         return
 
     global game_started

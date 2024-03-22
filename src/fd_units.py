@@ -1,9 +1,11 @@
-import src.fd_level as lvl
 import src.fd_entity as en
+import src.fd_level as lvl
+
 import src.fd_astar as astar
 import src.fd_notif as nls
 import src.fd_render as ren
 import src.fd_config as conf
+import src.fd_struct as st
 
 # == Far Depths Unit AI and Base Controller ==
 
@@ -35,6 +37,8 @@ def clear_unit_tasks(e):
             pass
         elif task[0] == 2: # dock task
             pass
+        elif task[0] == 3: # build task
+            pass
         else:
             raise ValueError("invalid task type on clear_unit")
 
@@ -48,6 +52,7 @@ def clear_unit_tasks(e):
         lvl.offset_by_pixel_mark(mine_task, -1)
     
     e.pop("path_target_dock", None)
+    e.pop("path_target_build", None)
 
     # clear mining
     revert_mining_queue(e["mining_queue"])
@@ -64,6 +69,8 @@ def interupt_busy_unit(e):
         elif task[0] == 1: # continue movment cooldown
             pass
         elif task[0] == 2: # material transfer
+            pass
+        elif task[0] == 3: # building a struct
             pass
         else: 
             raise ValueError("invalid task type on busy_interupt")
@@ -86,6 +93,12 @@ def add_dock_task(e, sub_index, append_task):
         clear_unit_tasks(e)
 
     e["task_queue"].append((2, sub_index))
+
+def add_build_task(e, pos, struct, append_task):
+    if not append_task:
+        clear_unit_tasks(e)
+
+    e["task_queue"].append((3, pos, struct))
 
 # mining subroutines
 
@@ -224,6 +237,16 @@ def unit_tick(e: dict):
                 if e.get("busy_with") == None:
                     nls.push_info(nls_sender, f"Finished transfering {e['transfer_size']} blocks!")
                     e["transfer_size"] = 0
+            elif task[0] == 3: # struct building
+                mats = e["stored_materials"]
+
+                # consume materials
+                mats[2] -= conf.struct_build_costs[task[2][1]][0]
+                mats[3] -= conf.struct_build_costs[task[2][1]][1]
+
+                # FIXME: in-system entity alloc s = st.spawn_struct(task[2][0])
+
+                nls.push_info(nls_sender, f"Finished building {s['pretty_name']}")
             else:
                 raise ValueError("invalid task type on busy_with")
 
@@ -267,6 +290,19 @@ def unit_tick(e: dict):
                     if not mat == None and not mat == 0:
                         e["busy_with"] = [2, conf.transfer_time, i, target]
                         break
+            
+            target = e.pop("path_target_build", None)
+            if not target == None:
+                mats = e["stored_materials"]
+                
+                if mats[2] - conf.struct_build_costs[target[1]][0] >= 0 and mats[3] - conf.struct_build_costs[target[1]][1] >= 0:
+                    nls.push_info(nls_sender, "Building a new structure...")
+
+                    # resources are consumed after the structure is done
+                    e["busy_with"] = [3, conf.struct_build_times[target[1]], target]
+
+                else:
+                    nls.push_error(nls_sender, "Can't build new structure! Not enough materials!")
                     
         else:
             next_pos = path.pop(0)
@@ -320,6 +356,16 @@ def unit_tick(e: dict):
             else:
                 # should *never* happen
                 nls.push_error(nls_sender, "Can't find a path to docking port!")
+
+        elif task[0] == 3: # build task
+            path = astar.pathfind(e["grid_trans"], task[1], True)
+
+            if not path == None:
+                e["current_path"] = path
+                e["path_target_build"] = (task[1], task[2])
+            
+            else:
+                nls.push_error(nls_sender, "Can't find a path to build a structure!")
 
         else:
             raise ValueError("invalid task type on task_setup")

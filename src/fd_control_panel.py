@@ -37,8 +37,6 @@ def setup_ctl_panel():
         "panel_data": {}
     })
 
-    return
-
     bsel = en.create_entity("build_select", {
         "ui_trans": [
             (2, 1),
@@ -46,13 +44,34 @@ def setup_ctl_panel():
             (250, 100)
         ],
 
+        "extender_ui_trans": [
+            (2, 1),
+            (-250 + 15, 15),
+            (-250 + 470 // 3 + 15, 100 - 15),
+        ],
+
+        "scanner_ui_trans": [
+            (2, 1),
+            (-250 + 470 // 3 + 15, 15),
+            (-250 + 470 // 3 * 2 + 15, 100 - 15),
+        ],
+
+        "detector_ui_trans": [
+            (2, 1),
+            (-250 + 470 // 3 * 2 + 15, 15),
+            (-250 + 470 // 3 * 3 + 15, 100 - 15),
+        ],
+
         "on_ui_frame": rlib.ctl_build_renderer,
-        "tick": ctl_build_tick,
+        "on_click": ctl_build_on_click,
 
         "selected_index": 0,
     })
 
 def ctl_on_click(e: dict, click):
+    if not rlib.ui_mode == 0:
+        return
+
     if not e["selected_entity"].get("unit_index") == None:
         # build button
         if cam.is_click_on_ui(e["build_ui_trans"], click):
@@ -62,6 +81,9 @@ def ctl_on_click(e: dict, click):
         elif cam.is_click_on_ui(e["dock_ui_trans"], click):
             un.add_dock_task(e["selected_entity"], None, False)
             return True
+
+    # block click on level
+    return cam.is_click_on_ui(e["ui_trans"], click)
 
 def ctl_tick(e: dict):
     sel = e["selected_entity"]
@@ -99,3 +121,22 @@ def ctl_tick(e: dict):
         data["selected_title"] = (sel["name_color"], sel["pretty_name"])
 
         data["status"] = "Online"
+
+def ctl_build_on_click(e: dict, click):
+    if not rlib.ui_mode == 1:
+        return
+
+    if cam.is_click_on_ui(e["extender_ui_trans"], click):
+        e["selected_index"] = 0
+        return True
+    
+    elif cam.is_click_on_ui(e["scanner_ui_trans"], click):
+        e["selected_index"] = 1
+        return True
+
+    elif cam.is_click_on_ui(e["detector_ui_trans"], click):
+        e["selected_index"] = 2
+        return True
+
+    # block click on level
+    return cam.is_click_on_ui(e["ui_trans"], click)
