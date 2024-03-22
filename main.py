@@ -17,17 +17,12 @@ ren.add_pass(rlib.setup_basic_pass("src/shaders/fs_trig.vert", "src/shaders/crt_
 ren.add_pass(rlib.setup_basic_pass("src/shaders/fs_trig.vert", "src/shaders/curve_effect.frag"))
 ren.add_pass(rlib.setup_bloom_pass("src/shaders/fs_trig.vert", "src/shaders/bloom_downsample.frag", "src/shaders/bloom_upsample.frag", "src/shaders/bloom_copy.frag", 6))
 
-x = 0
-y = 0
-
-# lvl.gen_level(None, 25)
-# lvl.init_level()
-
 i = 0
 
 loop_list = [
     mgr.menu_loop,
     mgr.in_game_loop,
+    mgr.game_over_loop,
 ]
 
 while True:

@@ -64,6 +64,10 @@ def in_game_loop():
 
         "power_usage": 1, # initial power usage
         "busy_generating": 0,
+
+        "units_undocked": 0,
+
+        "pretty_name": (4, "Base (You)")
     })
 
     lvl.set_circle(base_pos, 100, 0) # clear spawn location
@@ -81,7 +85,7 @@ def in_game_loop():
             "base_dock_pos": (base_pos[0] + unit[0], base_pos[1] + unit[1]),
 
             "on_frame": rlib.rect_renderer,
-            "rect_color": (128, 128, 128),
+            "rect_color": conf.unit_colors[i - 1],
 
             "tick": un.unit_tick,
 
@@ -102,9 +106,13 @@ def in_game_loop():
             "mining_queue": set(),
 
             "already_idle": True,
+
+            "is_docked": True,
         })
 
         base["power_usage"] += 2
+
+    un.game_over_trigged = 0
 
     is_dragging = False
     is_pressed = False
@@ -118,6 +126,7 @@ def in_game_loop():
 
     selected_unit = 1
     selected_entity = en.get_entity(f"unit_{selected_unit}")
+    is_selected_unit = True
 
     nls.setup_nls()
     ctl.setup_ctl_panel()
@@ -161,28 +170,39 @@ def in_game_loop():
             cam_x -= conf.cam_speed * ren.delta_time
             cam.set_camera((int(cam_x), int(cam_y)))
 
-        cam_offset = (cam_x - old_cam[0], cam_y - old_cam[1])
-
-        if not cam_offset[0] == 0 or not cam_offset[1] == 0:
-            lvl.invalidate_level(cam_offset)
-
         if click_consumed:
             is_pressed = True
 
         if rlib.ui_mode == 0: # normal mode
             if keys[pg.K_1]:
                 selected_unit = 1
+                is_selected_unit = True
             if keys[pg.K_2]:
                 selected_unit = 2
+                is_selected_unit = True
             if keys[pg.K_3]:
                 selected_unit = 3
+                is_selected_unit = True
             if keys[pg.K_4]:
                 selected_unit = 4
+                is_selected_unit = True
 
-            selected_entity = en.get_entity(f"unit_{selected_unit}")
-            ctl.set_selected(selected_entity)
+            if keys[pg.K_b]:
+                selected_unit = 0
+                is_selected_unit = False
 
-            if pg.mouse.get_pressed()[2] and not is_right_pressed:
+            if is_selected_unit:
+                selected_entity = en.get_entity(f"unit_{selected_unit}")
+                ctl.set_selected(selected_entity)
+            else:
+                selected_entity = en.get_entity(f"player_base")
+                ctl.set_selected(selected_entity)
+
+            if keys[pg.K_1] or keys[pg.K_2] or keys[pg.K_3] or keys[pg.K_4] or keys[pg.K_b]:
+                cam_x, cam_y = selected_entity["transform"][0]
+                cam.set_camera((int(cam_x), int(cam_y)))
+
+            if pg.mouse.get_pressed()[2] and not is_right_pressed and is_selected_unit:
                 is_right_pressed = True
 
                 mouse_pos = pg.mouse.get_pos()
@@ -193,10 +213,10 @@ def in_game_loop():
             elif not pg.mouse.get_pressed()[2]:
                 is_right_pressed = False
 
-            if keys[pg.K_e]:
+            if keys[pg.K_e] and is_selected_unit:
                 rlib.ui_mode = 1
 
-            if keys[pg.K_r] and not dock_base_pressed:
+            if keys[pg.K_r] and not dock_base_pressed and is_selected_unit:
                 dock_base_pressed = True
                 un.add_dock_task(selected_entity, None, is_shift)
             elif not keys[pg.K_r]:
@@ -210,7 +230,7 @@ def in_game_loop():
             # not None if finished dragging this frame
             final_drag_area = None
 
-            if not is_dragging and pg.mouse.get_pressed()[0] and not is_pressed:
+            if not is_dragging and pg.mouse.get_pressed()[0] and not is_pressed and is_selected_unit:
                 # started dragging
 
                 is_dragging = True
@@ -256,9 +276,24 @@ def in_game_loop():
         if is_pressed and not pg.mouse.get_pressed()[0]:
             is_pressed = False
 
+        cam_offset = (cam_x - old_cam[0], cam_y - old_cam[1])
+
+        if not cam_offset[0] == 0 or not cam_offset[1] == 0:
+            lvl.invalidate_level(cam_offset)
+
         # main game update
 
         en.tick()
+
+        # check for game over
+
+        if not un.game_over_trigged == 0:
+            un.game_over_stats.clear()
+
+            un.game_over_stats.append(base["stored_materials"])
+
+            en.reset()
+            return 2
 
         # render frame
 
@@ -274,10 +309,6 @@ def in_game_loop():
             pg.draw.rect(sur, (64, 255, 64), (drag_area[0][0], drag_area[0][1], drag_area[1][0] - drag_area[0][0], drag_area[1][1] - drag_area[0][1]))
 
         ren.submit()
-
-    en.reset()
-
-    return 0 # switch to menu loop
 
 # == main menu ==
 
@@ -366,3 +397,8 @@ def menu_loop():
     en.reset()
 
     return 1 # switch to in-game loop
+
+def game_over_loop():
+
+    en.reset()
+    return 0

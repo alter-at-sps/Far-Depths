@@ -14,6 +14,8 @@ def setup_ctl_panel():
             (300, 300)
         ],
 
+        # button transforms
+
         "build_ui_trans": [
             (1, 1),
             (25, 25 + 90 + 30),
@@ -24,6 +26,12 @@ def setup_ctl_panel():
             (1, 1),
             (25, 25 + 90 + 30 - 40),
             (300 - 35, 25 + 90 + 30 - 40 + 30)
+        ],
+
+        "depart_ui_trans": [
+            (1, 1),
+            (25, 25 + 90 + 30),
+            (300 - 35, 25 + 90 + 30 + 30)
         ],
 
         "on_ui_frame": rlib.ctl_renderer,
@@ -72,14 +80,20 @@ def ctl_on_click(e: dict, click):
     if not rlib.ui_mode == 0:
         return
 
-    if not e["selected_entity"].get("unit_index") == None:
+    if e["panel_data"]["type"] == 0:
         # build button
         if cam.is_click_on_ui(e["build_ui_trans"], click):
             rlib.ui_mode = 1
             return True
 
+        # dock button
         elif cam.is_click_on_ui(e["dock_ui_trans"], click):
             un.add_dock_task(e["selected_entity"], None, False)
+            return True
+    elif e["panel_data"]["type"] == 1:
+        # depart button
+        if cam.is_click_on_ui(e["depart_ui_trans"], click) and e["selected_entity"]["units_undocked"] == 0:
+            un.game_over_trigged = 2
             return True
 
     # block click on level
@@ -94,6 +108,7 @@ def ctl_tick(e: dict):
     unit = sel.get("unit_index")
     if not unit == None:
         data["selected_title"] = (sel["unit_index"] - 1, sel["pretty_name"])
+        data["type"] = 0
 
         busy_task = sel.get("busy_with")
         if not busy_task == None:
@@ -118,7 +133,8 @@ def ctl_tick(e: dict):
         
         data["materials"] = sel["stored_materials"]
     else:
-        data["selected_title"] = (sel["name_color"], sel["pretty_name"])
+        data["selected_title"] = sel["pretty_name"]
+        data["type"] = 1
 
         data["status"] = "Online"
 

@@ -285,6 +285,10 @@ def unit_tick(e: dict):
             target = e.pop("path_target_dock", -1)
             if target == None or not target == -1:
                 nls.push_info(nls_sender, "Docked and transfering blocks...")
+                
+                if not e["is_docked"]:
+                    e["is_docked"] = True
+                    en.get_entity("player_base")["units_undocked"] -= 1
 
                 for i, mat in enumerate(e["stored_materials"]):
                     if not mat == None and not mat == 0:
@@ -307,6 +311,10 @@ def unit_tick(e: dict):
         else:
             next_pos = path.pop(0)
             e["grid_trans"] = next_pos
+
+            if e["is_docked"]:
+                e["is_docked"] = False
+                en.get_entity("player_base")["units_undocked"] += 1
 
             lvl.unfog_area([ next_pos ], 24)
 
@@ -372,8 +380,13 @@ def unit_tick(e: dict):
 
 # base tick
 
+game_over_trigged = 0
+game_over_stats = []
+
 def base_tick(e: dict):
     # update power generation
+
+    global game_over_trigged
 
     e["busy_generating"] -= ren.delta_time
 
@@ -383,6 +396,6 @@ def base_tick(e: dict):
 
         if base_mats[2] <= 0:
             print("power lost")
-            quit() # FIXME: trigger lost game
+            game_over_trigged = 1
 
         e["busy_generating"] = conf.oxy_to_power_time / e["power_usage"]

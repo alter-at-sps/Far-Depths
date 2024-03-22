@@ -439,53 +439,75 @@ def ctl_renderer(e, sur):
     status_area = (panel_render_area[0] + panel_render_area[2] // 2 - status_area[2] // 2, panel_render_area[1] + 90 - status_area[3] // 2)
     font.render_to(sur, status_area, status_text, conf.ui_foreground_faded_color, size=14)
 
-    # build button
+    if data["type"] == 0:
+        # build button
 
-    #build_border_area = (panel_render_area[0] + 20, status_area[1] + 30, panel_render_area[2] - 40, 40)
-    build_border_area = cam.translate_ui(e["build_ui_trans"])
-    build_area = (build_border_area[0] + conf.ctl_button_border_size, build_border_area[1] + conf.ctl_button_border_size, build_border_area[2] - conf.ctl_button_border_size * 2, build_border_area[3] - conf.ctl_button_border_size * 2)
+        #build_border_area = (panel_render_area[0] + 20, status_area[1] + 30, panel_render_area[2] - 40, 40)
+        build_border_area = cam.translate_ui(e["build_ui_trans"])
+        build_area = (build_border_area[0] + conf.ctl_button_border_size, build_border_area[1] + conf.ctl_button_border_size, build_border_area[2] - conf.ctl_button_border_size * 2, build_border_area[3] - conf.ctl_button_border_size * 2)
 
-    pg.draw.rect(sur, conf.ui_foreground_color, build_border_area)
-    pg.draw.rect(sur, conf.ui_background_color, build_area)
+        pg.draw.rect(sur, conf.ui_foreground_color, build_border_area)
+        pg.draw.rect(sur, conf.ui_background_color, build_area)
 
-    build_text_area = font.get_rect("Build structure [e]", size=12)
-    build_text_area = (build_area[0] + build_area[2] // 2 - build_text_area[2] // 2, build_area[1] + build_area[3] // 2 - build_text_area[3] // 2)
+        build_text_area = font.get_rect("Build structure [e]", size=12)
+        build_text_area = (build_area[0] + build_area[2] // 2 - build_text_area[2] // 2, build_area[1] + build_area[3] // 2 - build_text_area[3] // 2)
 
-    font.render_to(sur, build_text_area, "Build structure [e]", conf.ui_foreground_color, size=12)
+        font.render_to(sur, build_text_area, "Build structure [e]", conf.ui_foreground_color, size=12)
 
-    # dock button
+        # dock button
 
-    dock_border_area = cam.translate_ui(e["dock_ui_trans"])
-    dock_area = (dock_border_area[0] + conf.ctl_button_border_size, dock_border_area[1] + conf.ctl_button_border_size, dock_border_area[2] - conf.ctl_button_border_size * 2, dock_border_area[3] - conf.ctl_button_border_size * 2)
+        dock_border_area = cam.translate_ui(e["dock_ui_trans"])
+        dock_area = (dock_border_area[0] + conf.ctl_button_border_size, dock_border_area[1] + conf.ctl_button_border_size, dock_border_area[2] - conf.ctl_button_border_size * 2, dock_border_area[3] - conf.ctl_button_border_size * 2)
 
-    pg.draw.rect(sur, conf.ui_foreground_color, dock_border_area)
-    pg.draw.rect(sur, conf.ui_background_color, dock_area)
+        mat_start_y = dock_border_area[1]
 
-    dock_text_area = font.get_rect("Dock to base [r]", size=12)
-    dock_text_area = (dock_area[0] + dock_area[2] // 2 - dock_text_area[2] // 2, dock_area[1] + dock_area[3] // 2 - dock_text_area[3] // 2)
+        pg.draw.rect(sur, conf.ui_foreground_color, dock_border_area)
+        pg.draw.rect(sur, conf.ui_background_color, dock_area)
 
-    font.render_to(sur, dock_text_area, "Dock to base [r]", conf.ui_foreground_color, size=12)
+        dock_text_area = font.get_rect("Dock to base [r]", size=12)
+        dock_text_area = (dock_area[0] + dock_area[2] // 2 - dock_text_area[2] // 2, dock_area[1] + dock_area[3] // 2 - dock_text_area[3] // 2)
+
+        font.render_to(sur, dock_text_area, "Dock to base [r]", conf.ui_foreground_color, size=12)
+
+    elif data["type"] == 1:
+        # depart button
+
+        depart_border_area = cam.translate_ui(e["depart_ui_trans"])
+        depart_area = (depart_border_area[0] + conf.ctl_button_border_size, depart_border_area[1] + conf.ctl_button_border_size, depart_border_area[2] - conf.ctl_button_border_size * 2, depart_border_area[3] - conf.ctl_button_border_size * 2)
+
+        mat_start_y = depart_border_area[1]
+
+        can_depart = e["selected_entity"]["units_undocked"] == 0
+
+        pg.draw.rect(sur, conf.ui_foreground_color if can_depart else conf.ui_foreground_faded_color, depart_border_area)
+        pg.draw.rect(sur, conf.ui_background_color, depart_area)
+
+        depart_text_area = font.get_rect("Depart now.", size=12)
+        depart_text_area = (depart_area[0] + depart_area[2] // 2 - depart_text_area[2] // 2, depart_area[1] + depart_area[3] // 2 - depart_text_area[3] // 2)
+
+        font.render_to(sur, depart_text_area, "Depart now.", conf.ui_foreground_color if can_depart else conf.ui_foreground_faded_color, size=12)
 
     # materials
 
-    mats = data.get("materials")
-    if not mats == None:
-        # materials tag
+    if data["type"] == 0 or data["type"] == 1:
+        mats = data.get("materials")
+        if not mats == None:
+            # materials tag
 
-        tag_area = [panel_render_area[0] + 40, dock_border_area[1] + 50]
+            tag_area = [panel_render_area[0] + 40, mat_start_y + 50]
 
-        font.render_to(sur, tag_area, "stored materials:", conf.ui_foreground_faded_color, size=10)
+            font.render_to(sur, tag_area, "stored materials:", conf.ui_foreground_faded_color, size=10)
 
-        # materials
+            # materials
 
-        tag_area[1] += 15
-        font.render_to(sur, tag_area, f" - stone: {mats[1]}", conf.ui_foreground_faded_color, size=10)
+            tag_area[1] += 15
+            font.render_to(sur, tag_area, f" - stone: {mats[1]}", conf.ui_foreground_faded_color, size=10)
 
-        tag_area[1] += 15
-        font.render_to(sur, tag_area, f" - oxy: {mats[2]}", conf.ui_foreground_faded_color, size=10)
+            tag_area[1] += 15
+            font.render_to(sur, tag_area, f" - oxy: {mats[2]}", conf.ui_foreground_faded_color, size=10)
 
-        tag_area[1] += 15
-        font.render_to(sur, tag_area, f" - goal: {mats[3]}", conf.ui_foreground_faded_color, size=10)
+            tag_area[1] += 15
+            font.render_to(sur, tag_area, f" - goal: {mats[3]}", conf.ui_foreground_faded_color, size=10)
 
 def ctl_build_renderer(e, sur):
     if not ui_mode == 1:
