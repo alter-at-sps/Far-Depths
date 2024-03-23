@@ -9,19 +9,22 @@ import src.fd_level as lvl
 
 next_struct_index = 1
 
-def spawn_struct(p):
+def spawn_struct(p, t):
     global next_struct_index
+
+    pos = lvl.grid_to_world_space(p)
 
     s = en.create_entity(f"struct_{next_struct_index}", {
         "transform": [
-            None, # set on ticks
+            (pos[0] + lvl.point_size // 2, pos[1] + lvl.point_size // 2),
             (18, 18)
         ],
 
         "grid_trans": p,
 
-        # "on_frame": rlib.struct_renderer,
+        "on_frame": rlib.struct_renderer,
         "tick": struct_tick,
+        "struct_type": t,
 
         "pretty_name": (2, f"Structure #{next_struct_index}"),
     })
@@ -45,4 +48,5 @@ def struct_tick(e: dict):
     pass
 
 def struct_ghost_tick(e: dict):
-    e["transform"][0] = lvl.grid_to_world_space(lvl.world_to_grid_space(cam.inverse_translate(pg.mouse.get_pos())))
+    pos = lvl.grid_to_world_space(lvl.world_to_grid_space(cam.inverse_translate(pg.mouse.get_pos())))
+    e["transform"][0] = (pos[0] + lvl.point_size // 2, pos[1] + lvl.point_size // 2)

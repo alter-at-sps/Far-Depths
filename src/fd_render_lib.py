@@ -1,6 +1,7 @@
 import pygame as pg
 import pygame.freetype as freetype
 import pygame.gfxdraw as gfx
+import time
 import OpenGL.GL as gl
 
 import src.fd_render as ren
@@ -305,6 +306,13 @@ def rect_renderer(e, sur):
 
 # struct renderer
 
+def struct_renderer(e, sur):
+    trans = e["transform"]
+    render_area = cam.translate(trans[0], trans[1])
+
+    pg.draw.polygon(sur, conf.struct_colors[e["struct_type"]], ((render_area[0] + render_area[2] // 2, render_area[1]), (render_area[0], render_area[1] + render_area[3]), (render_area[0] + render_area[2], render_area[1] + render_area[3])))
+    # pg.draw.rect(sur, conf.struct_colors[e["struct_type"]], render_area)
+
 def struct_ghost_renderer(e, sur):
     if not ui_mode == 1:
         return
@@ -312,7 +320,7 @@ def struct_ghost_renderer(e, sur):
     trans = e["transform"]
     render_area = cam.translate(trans[0], trans[1])
 
-    pg.draw.rect(sur, (127, 127, 127), render_area)
+    pg.draw.polygon(sur, (127, 127, 127), ((render_area[0] + render_area[2] // 2, render_area[1]), (render_area[0], render_area[1] + render_area[3]), (render_area[0] + render_area[2], render_area[1] + render_area[3])))
 
 # ui globals
 
@@ -615,6 +623,21 @@ def timer_renderer(e, sur):
     tag_tag_area = (timer_render_area[0] + 158 - tag_tag_area[2] // 2, timer_render_area[1] + 10 - tag_tag_area[3] // 2)
 
     font.render_to(sur, tag_tag_area, "goal:", conf.ui_foreground_color, size=10)
+
+    # draw warning outline on low time
+
+    if not e["eta"] < conf.timer_warn_at_time:
+        return
+
+    if int(time.time() * 4) % 2 == 1:
+        alpha = 200
+    else:
+        alpha = 127
+
+    for i in range(conf.timer_outline_width):
+        outline_render_area = (render_area[0] - conf.timer_outline_margin - i, render_area[1] - conf.timer_outline_margin - i, render_area[2] + conf.timer_outline_margin * 2 + 2 * i, render_area[3] + conf.timer_outline_margin * 2 + 2 * i)
+
+        gfx.rectangle(sur, outline_render_area, (255, 0, 0, alpha))
 
 # dev frametime display
 

@@ -17,7 +17,7 @@ def get_entity(name):
 
 # calls a system (component) on every entity if it has that system
 def call_system(s_name, *args):
-    for name, e in entity_registry.items():
+    for name, e in dict(entity_registry).items():
         s = e.get(s_name)
 
         if not s == None:
@@ -29,7 +29,7 @@ def call_system(s_name, *args):
 
 # calls a system (component) on every entity if it has that system and stop if system returns true
 def call_system_consuming(s_name, *args):
-    for name, e in entity_registry.items():
+    for name, e in dict(entity_registry).items():
         s = e.get(s_name)
 
         if not s == None:

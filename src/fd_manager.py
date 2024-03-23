@@ -112,7 +112,13 @@ def in_game_loop():
 
         base["power_usage"] += 2
 
+    # reset globals
+
     un.game_over_trigged = 0
+    rlib.ui_mode = 0
+    st.next_struct_index = 1
+
+    # setup game loop locals
 
     is_dragging = False
     is_pressed = False
@@ -399,6 +405,9 @@ def menu_loop():
     return 1 # switch to in-game loop
 
 def game_over_loop():
+    # setup game over entities
+    
+    rlib.ui_mode = 0
 
     en.reset()
     return 0

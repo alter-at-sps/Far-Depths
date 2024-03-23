@@ -38,6 +38,9 @@ ctl_border_size = 5
 ctl_button_border_size = 3
 
 timer_border_size = 5
+timer_outline_margin = 10
+timer_outline_width = 10
+timer_warn_at_time = 25
 
 # level gen
 
@@ -72,6 +75,12 @@ unit_colors = (
     (0, 255, 255),
     (255, 255, 0),
     (255, 0, 255)
+)
+
+struct_colors = (
+    (102, 102, 102),
+    (200, 200, 200),
+    (102, 200, 102)
 )
 
 oxy_to_power_time = 30

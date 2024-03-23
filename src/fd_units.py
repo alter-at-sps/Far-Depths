@@ -180,8 +180,6 @@ def set_next_to_mine(e, finished_point, mining_queue: set):
 def unit_tick(e: dict):
     global t
 
-    # TODO: move only after some cooldown
-
     pos = lvl.grid_to_world_space(e["grid_trans"])
 
     e["transform"][0] = (pos[0] + lvl.point_size // 2, pos[1] + lvl.point_size // 2)
@@ -244,9 +242,9 @@ def unit_tick(e: dict):
                 mats[2] -= conf.struct_build_costs[task[2][1]][0]
                 mats[3] -= conf.struct_build_costs[task[2][1]][1]
 
-                # FIXME: in-system entity alloc s = st.spawn_struct(task[2][0])
+                s = st.spawn_struct(task[2][0], task[2][1])
 
-                nls.push_info(nls_sender, f"Finished building {s['pretty_name']}")
+                nls.push_info(nls_sender, f"Finished building {s['pretty_name'][1]}")
             else:
                 raise ValueError("invalid task type on busy_with")
 
@@ -306,7 +304,7 @@ def unit_tick(e: dict):
                     e["busy_with"] = [3, conf.struct_build_times[target[1]], target]
 
                 else:
-                    nls.push_error(nls_sender, "Can't build new structure! Not enough materials!")
+                    nls.push_error(nls_sender, "Not enough materials to build structure!")
                     
         else:
             next_pos = path.pop(0)
