@@ -1,5 +1,6 @@
 import pygame as pg
 import random
+import time
 
 import src.fd_render as ren
 import src.fd_render_lib as rlib
@@ -18,6 +19,17 @@ import src.fd_struct as st
 # == Far Depths Main Event Loop ==
 
 def in_game_loop():
+    # reset globals
+
+    un.game_over_trigged = 0
+    rlib.ui_mode = 0
+    st.next_struct_index = 1
+    un.total_mined = [None, 0, 0, 0]
+
+    cam.set_camera((0, 0))
+
+    # generate level
+
     pg.display.set_caption("Far Depths - Traveling to a forbidden location")
 
     lvl.gen_level(None, 25)
@@ -112,12 +124,6 @@ def in_game_loop():
 
         base["power_usage"] += 2
 
-    # reset globals
-
-    un.game_over_trigged = 0
-    rlib.ui_mode = 0
-    st.next_struct_index = 1
-
     # setup game loop locals
 
     is_dragging = False
@@ -138,6 +144,8 @@ def in_game_loop():
     ctl.setup_ctl_panel()
     ti.setup_timer()
     st.setup_struct_build_ghost()
+
+    start_game_time = time.time()
 
     while True:
         click_consumed = False
@@ -275,6 +283,8 @@ def in_game_loop():
                 w_struct_loc = cam.inverse_translate(pg.mouse.get_pos())
                 g_struct_loc = lvl.world_to_grid_space(w_struct_loc)
 
+                is_pressed = True
+
                 un.add_build_task(selected_entity, g_struct_loc, en.get_entity("control_panel")["selected_build"], is_shift)
 
                 rlib.ui_mode = 0
@@ -296,7 +306,10 @@ def in_game_loop():
         if not un.game_over_trigged == 0:
             un.game_over_stats.clear()
 
+            un.game_over_stats.append(en.get_entity("timer_ui")["eta"])
+            un.game_over_stats.append(time.time() - start_game_time)
             un.game_over_stats.append(base["stored_materials"])
+            un.game_over_stats.append(un.total_mined)
 
             en.reset()
             return 2
@@ -404,10 +417,201 @@ def menu_loop():
 
     return 1 # switch to in-game loop
 
+# == game stats loop ==
+
+return_to_menu = True
+
+def stats_return_to_menu(e, click):
+    global return_to_menu
+    return_to_menu = cam.is_click_on_ui(e['ui_trans'], click)
+
 def game_over_loop():
-    # setup game over entities
-    
-    rlib.ui_mode = 0
+    # play game over animation
+
+    start_time = time.time()
+
+    if un.game_over_trigged == 1:
+        while not time.time() - start_time > 5:
+            # events
+            for e in pg.event.get():
+                if e.type == pg.QUIT:
+                    return None
+                if e.type == pg.WINDOWRESIZED:
+                    ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
+
+            sur = ren.get_surface()
+            sur.fill((0, 0, 0))
+
+            ren.submit()
+        
+        while True:
+            # events
+            for e in pg.event.get():
+                if e.type == pg.QUIT:
+                    return None
+                if e.type == pg.WINDOWRESIZED:
+                    ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
+
+            t = time.time() - start_time
+
+            sur = ren.get_surface()
+
+            power_up_mult = min((t - 5) * 2, 1)
+            sur.fill((int(conf.ui_background_color[0] * power_up_mult), int(conf.ui_background_color[1] * power_up_mult), int(conf.ui_background_color[2] * power_up_mult)))
+
+            if rlib.power_lost_anim_renderer(t, sur):
+                break
+
+            ren.submit()
+
+    elif un.game_over_trigged == 2:
+        while True:
+            # events
+            for e in pg.event.get():
+                if e.type == pg.QUIT:
+                    return None
+                if e.type == pg.WINDOWRESIZED:
+                    ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
+
+            t = time.time() - start_time
+
+            sur = ren.get_surface()
+            sur.fill(conf.ui_background_color)
+
+            if rlib.departed_anim_renderer(t, sur):
+                break
+
+            ren.submit()
+
+    # display game stats
+
+    status_text = en.create_entity("status_text", {
+        "ui_trans": [
+            (2, 2),
+            (-250, -230),
+            (250, -150)
+        ],
+
+        "on_ui_frame": rlib.text_renderer,
+        "text": "Mission success." if un.game_over_trigged == 2 else "Mission failed.",
+        "text_size": 22,
+        "text_color": conf.ui_foreground_color,
+    })
+
+    time_remaining = en.create_entity("time_remaining", {
+        "ui_trans": [
+            (2, 2),
+            (-280, -120),
+            (0, -100)
+        ],
+
+        "on_ui_frame": rlib.left_aligned_text_renderer,
+        "text": f"Time remaining: {int(un.game_over_stats[0] // 60):0=2}:{int(un.game_over_stats[0] % 60):0=2}",
+        "text_size": 16,
+        "text_color": conf.ui_foreground_faded_color,
+    })
+
+    time_played = en.create_entity("time_played", {
+        "ui_trans": [
+            (2, 2),
+            (-280, -90),
+            (0, -70)
+        ],
+
+        "on_ui_frame": rlib.left_aligned_text_renderer,
+        "text": f"Time in-game: {int(un.game_over_stats[1] // 60):0=2}:{int(un.game_over_stats[1] % 60):0=2}",
+        "text_size": 16,
+        "text_color": conf.ui_foreground_faded_color,
+    })
+
+    goal_collected = en.create_entity("goal_collected", {
+        "ui_trans": [
+            (2, 2),
+            (-280, -50),
+            (0, -30)
+        ],
+
+        "on_ui_frame": rlib.left_aligned_text_renderer,
+        "text": f"Goal collected: {un.game_over_stats[2][3] if un.game_over_trigged == 2 else 'Failed to depart'}",
+        "text_size": 16,
+        "text_color": conf.ui_foreground_color,
+    })
+
+    stone_mined = en.create_entity("stone_mined", {
+        "ui_trans": [
+            (2, 2),
+            (-280, -10),
+            (0, 10)
+        ],
+
+        "on_ui_frame": rlib.left_aligned_text_renderer,
+        "text": f"Total stone mined: {un.game_over_stats[3][1]}",
+        "text_size": 16,
+        "text_color": conf.ui_foreground_faded_color,
+    })
+
+    oxy_mined = en.create_entity("oxy_mined", {
+        "ui_trans": [
+            (2, 2),
+            (-280, 20),
+            (0, 40)
+        ],
+
+        "on_ui_frame": rlib.left_aligned_text_renderer,
+        "text": f"Total oxy mined: {un.game_over_stats[3][2]}",
+        "text_size": 16,
+        "text_color": conf.ui_foreground_faded_color,
+    })
+
+    goal_mined = en.create_entity("goal_mined", {
+        "ui_trans": [
+            (2, 2),
+            (-280, 50),
+            (0, 70)
+        ],
+
+        "on_ui_frame": rlib.left_aligned_text_renderer,
+        "text": f"Total goal mined: {un.game_over_stats[3][3]}",
+        "text_size": 16,
+        "text_color": conf.ui_foreground_faded_color,
+    })
+
+    return_button = en.create_entity("return_button", {
+        "ui_trans": [
+            (2, 2),
+            (-100, 120),
+            (100, 160)
+        ],
+
+        "on_ui_frame": rlib.button_renderer,
+        "on_click": stats_return_to_menu,
+
+        "button_border_size": 5,
+        "button_text": "Return to menu",
+    })
+
+    global return_to_menu
+    return_to_menu = False
+
+    while True:
+        # events
+        for e in pg.event.get():
+            if e.type == pg.QUIT:
+                return None
+            if e.type == pg.MOUSEBUTTONDOWN:
+                en.click_event((e.dict["pos"], e.dict["button"]))
+            if e.type == pg.WINDOWRESIZED:
+                ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
+
+        if return_to_menu:
+            break
+
+        sur = ren.get_surface()
+        sur.fill(conf.ui_background_color)
+
+        en.render_ui(sur)
+
+        ren.submit()
 
     en.reset()
     return 0

@@ -122,5 +122,5 @@ secret_titles = (
 
 # dev options
 
-dev_fastmap = True
-dev_frametimes = True
+dev_fastmap = False
+dev_frametimes = False

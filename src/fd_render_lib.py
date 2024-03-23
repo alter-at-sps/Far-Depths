@@ -684,3 +684,79 @@ def text_renderer(e, sur):
 
     text_area = (render_area[0] + render_area[2] // 2 - text_area[2] // 2, render_area[1] + render_area[3] // 2 - text_area[3] // 2)
     font.render_to(sur, text_area, text_string, e["text_color"], size=text_size)
+
+def left_aligned_text_renderer(e, sur):
+    render_area = cam.translate_ui(e["ui_trans"])
+
+    text_string = e["text"]
+    text_size = e["text_size"]
+
+    text_area = font.get_rect(text_string, size=text_size)
+
+    text_area = (render_area[0] + render_area[2] // 2, render_area[1] + render_area[3] // 2 - text_area[3] // 2)
+    font.render_to(sur, text_area, text_string, e["text_color"], size=text_size)
+
+# game over renderers
+
+def power_lost_anim_renderer(t, sur):
+    center = (sur.get_width() // 2, sur.get_height() // 2)
+
+    if t < 6:
+        pass
+    elif t > 6 and t < 7:
+        font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected.", conf.ui_foreground_color)
+
+    elif t > 7 and t < 10:
+        if int(t * 7) % 4 == 0:
+            font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to AUX batteries... /", conf.ui_foreground_color)
+        elif int(t * 7) % 4 == 1:
+            font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to AUX batteries... -", conf.ui_foreground_color)
+        elif int(t * 7) % 4 == 2:
+            font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to AUX batteries... \\", conf.ui_foreground_color)
+        elif int(t * 7) % 4 == 3:
+            font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to AUX batteries... |", conf.ui_foreground_color)
+        
+    elif t > 10 and t < 11:
+        font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to AUX batteries... done", conf.ui_foreground_color)
+    elif t > 11 and t < 14:
+        font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to AUX batteries... done", conf.ui_foreground_color)
+        
+        if int(t * 7) % 4 == 0:
+            font.render_to(sur, (center[0] - 400, center[1] + 14), "> Mission failed. Gathering logs... /", conf.ui_foreground_color)
+        elif int(t * 7) % 4 == 1:
+            font.render_to(sur, (center[0] - 400, center[1] + 14), "> Mission failed. Gathering logs... -", conf.ui_foreground_color)
+        elif int(t * 7) % 4 == 2:
+            font.render_to(sur, (center[0] - 400, center[1] + 14), "> Mission failed. Gathering logs... \\", conf.ui_foreground_color)
+        elif int(t * 7) % 4 == 3:
+            font.render_to(sur, (center[0] - 400, center[1] + 14), "> Mission failed. Gathering logs... |", conf.ui_foreground_color)
+    elif t > 14 and t < 15:
+        font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to AUX batteries... done", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] + 14), "> Mission failed. Gathering logs... done", conf.ui_foreground_color)
+    else:
+        return True
+    
+    return False
+
+def departed_anim_renderer(t, sur):
+    center = (sur.get_width() // 2, sur.get_height() // 2)
+
+    if t < 1:
+        pass
+    elif t > 1 and t < 6:
+        if int(t * 7) % 4 == 0:
+            font.render_to(sur, (center[0] - 400, center[1] - 12), "> Departing from location... /", conf.ui_foreground_color)
+        elif int(t * 7) % 4 == 1:
+            font.render_to(sur, (center[0] - 400, center[1] - 12), "> Departing from location... -", conf.ui_foreground_color)
+        elif int(t * 7) % 4 == 2:
+            font.render_to(sur, (center[0] - 400, center[1] - 12), "> Departing from location... \\", conf.ui_foreground_color)
+        elif int(t * 7) % 4 == 3:
+            font.render_to(sur, (center[0] - 400, center[1] - 12), "> Departing from location... |", conf.ui_foreground_color)
+    elif t > 6 and t < 7:
+        font.render_to(sur, (center[0] - 400, center[1] - 12), "> Departing from location... done", conf.ui_foreground_color)
+    elif t > 7 and t < 8.5:
+        font.render_to(sur, (center[0] - 400, center[1] - 12), "> Departing from location... done", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] + 14), "> Mission success!", conf.ui_foreground_color)
+    else:
+        return True
+
+    return False

@@ -95,6 +95,10 @@ def add_dock_task(e, sub_index, append_task):
     e["task_queue"].append((2, sub_index))
 
 def add_build_task(e, pos, struct, append_task):
+    if not lvl.get_pixel_navgrid(pos) == 1:
+        nls.push_error(f"unit {e['unit_index']}", "Can't build at reqested position!")
+        return
+    
     if not append_task:
         clear_unit_tasks(e)
 
@@ -177,6 +181,13 @@ def set_next_to_mine(e, finished_point, mining_queue: set):
 
 # move_time = .2
 
+total_mined = [
+    None, # air (unused)
+    0, # stone
+    0, # oxy
+    0, # goal
+]
+
 def unit_tick(e: dict):
     global t
 
@@ -201,6 +212,7 @@ def unit_tick(e: dict):
 
                 mat_type = lvl.get_pixel(task[2])
                 mats[mat_type] += 1
+                total_mined[mat_type] += 1
 
                 lvl.set_pixel(task[2], 0) # mine out pixel
                 lvl.set_pixel_navgrid(task[2], 1) # expand navgrid
@@ -393,7 +405,6 @@ def base_tick(e: dict):
         base_mats[2] -= 1
 
         if base_mats[2] <= 0:
-            print("power lost")
             game_over_trigged = 1
 
         e["busy_generating"] = conf.oxy_to_power_time / e["power_usage"]
