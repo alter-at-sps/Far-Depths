@@ -164,11 +164,11 @@ def invalidate_level(offset, refresh = True):
         level_surface.scroll(*move_offset)
         level_fow_surface.scroll(*move_offset)
 
-        redraw_dist = (abs(offset[0]) / point_size, abs(offset[1]) / point_size)
+        redraw_dist = (offset[0] / point_size, offset[1] / point_size)
 
         for x in range(level_surface_span[0], level_surface_span[2] + 1):
             for y in range(level_surface_span[1], level_surface_span[3] + 1):
-                if (x < old_span[0] + redraw_dist[0] or x > old_span[2] - redraw_dist[0]) or (y < old_span[1] + redraw_dist[1] or y > old_span[3] - redraw_dist[1]):
+                if (x < old_span[0] - redraw_dist[0] or x > old_span[2] - redraw_dist[0]) or (y < old_span[1] - redraw_dist[1] or y > old_span[3] - redraw_dist[1]):
                     level_surface_damaged.append((x, y))
 
 def resize_level_preren(res):
