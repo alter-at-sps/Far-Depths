@@ -601,23 +601,29 @@ def timer_renderer(e, sur):
     eta_text = f"{int(e['eta'] // 60):0=2}:{int(e['eta'] % 60):0=2}"
     
     eta_area = font.get_rect(eta_text, size=22)
-    eta_area = (timer_render_area[0] + 25, timer_render_area[1] + 30 - eta_area[3] // 2)
+    eta_area = (timer_render_area[0] + 20, timer_render_area[1] + 30 - eta_area[3] // 2)
 
     font.render_to(sur, eta_area, eta_text, conf.ui_foreground_color, size=22)
 
     eta_tag_area = font.get_rect("power eta:", size=10)
-    eta_tag_area = (timer_render_area[0] + 65 - eta_tag_area[2] // 2, timer_render_area[1] + 10 - eta_tag_area[3] // 2)
+    eta_tag_area = (timer_render_area[0] + 62 - eta_tag_area[2] // 2, timer_render_area[1] + 10 - eta_tag_area[3] // 2)
 
     font.render_to(sur, eta_tag_area, "power eta:", conf.ui_foreground_color, size=10)
 
     # draw goal mat
 
-    tag_text = f"{int(e['goal_mat_count'])}"
+    count = int(e['goal_mat_count'])
+    if count < 1000:
+        tag_text = f"{count}"
+    elif count < 100 * 1000:
+        tag_text = f"{round(count / 1000, 1)}k"
+    else:
+        tag_text = f"{round(count / (1000 * 1000), 1)}M"
     
-    tag_area = font.get_rect(tag_text, size=20)
+    tag_area = font.get_rect(tag_text, size=16)
     tag_area = (timer_render_area[0] + 158 - tag_area[2] // 2, timer_render_area[1] + 30 - tag_area[3] // 2)
 
-    font.render_to(sur, tag_area, tag_text, conf.ui_foreground_color, size=20)
+    font.render_to(sur, tag_area, tag_text, conf.ui_foreground_color, size=16)
 
     tag_tag_area = font.get_rect("goal:", size=10)
     tag_tag_area = (timer_render_area[0] + 158 - tag_tag_area[2] // 2, timer_render_area[1] + 10 - tag_tag_area[3] // 2)
@@ -708,18 +714,18 @@ def power_lost_anim_renderer(t, sur):
 
     elif t > 7 and t < 10:
         if int(t * 7) % 4 == 0:
-            font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to AUX batteries... /", conf.ui_foreground_color)
+            font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to backup batteries... /", conf.ui_foreground_color)
         elif int(t * 7) % 4 == 1:
-            font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to AUX batteries... -", conf.ui_foreground_color)
+            font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to backup batteries... -", conf.ui_foreground_color)
         elif int(t * 7) % 4 == 2:
-            font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to AUX batteries... \\", conf.ui_foreground_color)
+            font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to backup batteries... \\", conf.ui_foreground_color)
         elif int(t * 7) % 4 == 3:
-            font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to AUX batteries... |", conf.ui_foreground_color)
+            font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to backup batteries... |", conf.ui_foreground_color)
         
     elif t > 10 and t < 11:
-        font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to AUX batteries... done", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to backup batteries... done", conf.ui_foreground_color)
     elif t > 11 and t < 14:
-        font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to AUX batteries... done", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to backup batteries... done", conf.ui_foreground_color)
         
         if int(t * 7) % 4 == 0:
             font.render_to(sur, (center[0] - 400, center[1] + 14), "> Mission failed. Gathering logs... /", conf.ui_foreground_color)
@@ -730,7 +736,7 @@ def power_lost_anim_renderer(t, sur):
         elif int(t * 7) % 4 == 3:
             font.render_to(sur, (center[0] - 400, center[1] + 14), "> Mission failed. Gathering logs... |", conf.ui_foreground_color)
     elif t > 14 and t < 15:
-        font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to AUX batteries... done", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 12), "> Power loss detected. Switching to backup batteries... done", conf.ui_foreground_color)
         font.render_to(sur, (center[0] - 400, center[1] + 14), "> Mission failed. Gathering logs... done", conf.ui_foreground_color)
     else:
         return True
@@ -742,7 +748,7 @@ def departed_anim_renderer(t, sur):
 
     if t < 1:
         pass
-    elif t > 1 and t < 6:
+    elif t > 1 and t < 3:
         if int(t * 7) % 4 == 0:
             font.render_to(sur, (center[0] - 400, center[1] - 12), "> Departing from location... /", conf.ui_foreground_color)
         elif int(t * 7) % 4 == 1:
@@ -751,9 +757,9 @@ def departed_anim_renderer(t, sur):
             font.render_to(sur, (center[0] - 400, center[1] - 12), "> Departing from location... \\", conf.ui_foreground_color)
         elif int(t * 7) % 4 == 3:
             font.render_to(sur, (center[0] - 400, center[1] - 12), "> Departing from location... |", conf.ui_foreground_color)
-    elif t > 6 and t < 7:
+    elif t > 3 and t < 4:
         font.render_to(sur, (center[0] - 400, center[1] - 12), "> Departing from location... done", conf.ui_foreground_color)
-    elif t > 7 and t < 8.5:
+    elif t > 4 and t < 5.5:
         font.render_to(sur, (center[0] - 400, center[1] - 12), "> Departing from location... done", conf.ui_foreground_color)
         font.render_to(sur, (center[0] - 400, center[1] + 14), "> Mission success!", conf.ui_foreground_color)
     else:

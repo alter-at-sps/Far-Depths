@@ -51,6 +51,9 @@ level_mark = []
 
 def init_level():
     level.clear()
+    level_fow.clear()
+    level_navgrid.clear()
+    level_mark.clear()
 
     for i in range(conf.level_size[1]):
         collum = []

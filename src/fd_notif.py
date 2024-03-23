@@ -19,15 +19,18 @@ def push_info(sender, message):
 
 def push_warn(sender, message):
     append_log((1, f"> {sender}: {message}"))
+    print(f"> {sender} WARN: {message}")
+
+    if sender == f"unit {en.get_entity('control_panel')['selected_entity'].get('unit_index')}":
+        return # supress warning notif for selected unit
 
     en.get_entity("nls_terminal")["nls_notif_timer"][1] = 2
-    print(f"> {sender} WARN: {message}")
 
 def push_error(sender, message):
     append_log((2, f"> {sender}: {message}"))
+    print(f"> {sender} ERROR: {message}")
 
     en.get_entity("nls_terminal")["nls_notif_timer"][0] = 2
-    print(f"> {sender} ERROR: {message}")
 
 def setup_nls():
     nls = en.create_entity("nls_terminal", {

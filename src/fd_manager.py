@@ -212,7 +212,7 @@ def in_game_loop():
                 selected_entity = en.get_entity(f"player_base")
                 ctl.set_selected(selected_entity)
 
-            if keys[pg.K_1] or keys[pg.K_2] or keys[pg.K_3] or keys[pg.K_4] or keys[pg.K_b]:
+            if (keys[pg.K_1] or keys[pg.K_2] or keys[pg.K_3] or keys[pg.K_4] or keys[pg.K_b]) and not is_shift:
                 cam_x, cam_y = selected_entity["transform"][0]
                 cam.set_camera((int(cam_x), int(cam_y)))
 
@@ -425,6 +425,14 @@ def stats_return_to_menu(e, click):
     global return_to_menu
     return_to_menu = cam.is_click_on_ui(e['ui_trans'], click)
 
+def suffix_count(count):
+    if count < 1000:
+        return f"{count}"
+    elif count < 1000 * 1000:
+        return f"{round(count / 1000, 2)}k"
+    else:
+        return f"{round(count / (1000 * 1000), 2)}M"
+
 def game_over_loop():
     # play game over animation
 
@@ -532,7 +540,7 @@ def game_over_loop():
         ],
 
         "on_ui_frame": rlib.left_aligned_text_renderer,
-        "text": f"Goal collected: {un.game_over_stats[2][3] if un.game_over_trigged == 2 else 'Failed to depart'}",
+        "text": f"Goal collected: {suffix_count(un.game_over_stats[2][3]) if un.game_over_trigged == 2 else 'Failed to depart'}",
         "text_size": 16,
         "text_color": conf.ui_foreground_color,
     })
@@ -545,7 +553,7 @@ def game_over_loop():
         ],
 
         "on_ui_frame": rlib.left_aligned_text_renderer,
-        "text": f"Total stone mined: {un.game_over_stats[3][1]}",
+        "text": f"Total stone mined: {suffix_count(un.game_over_stats[3][1])}",
         "text_size": 16,
         "text_color": conf.ui_foreground_faded_color,
     })
@@ -558,7 +566,7 @@ def game_over_loop():
         ],
 
         "on_ui_frame": rlib.left_aligned_text_renderer,
-        "text": f"Total oxy mined: {un.game_over_stats[3][2]}",
+        "text": f"Total oxy mined: {suffix_count(un.game_over_stats[3][2])}",
         "text_size": 16,
         "text_color": conf.ui_foreground_faded_color,
     })
@@ -571,7 +579,7 @@ def game_over_loop():
         ],
 
         "on_ui_frame": rlib.left_aligned_text_renderer,
-        "text": f"Total goal mined: {un.game_over_stats[3][3]}",
+        "text": f"Total goal mined: {suffix_count(un.game_over_stats[3][3])}",
         "text_size": 16,
         "text_color": conf.ui_foreground_faded_color,
     })
