@@ -91,11 +91,11 @@ def add_move_task(e, target_point, append_task):
 
     e["task_queue"].append((1, target_point))
 
-def add_dock_task(e, append_task):
+def add_dock_task(e, append_task, force_base = False):
     if not append_task:
         clear_unit_tasks(e)
 
-    e["task_queue"].append((2, ))
+    e["task_queue"].append((2, force_base))
 
 def add_build_task(e, pos, struct, append_task):
     if not lvl.get_pixel_navgrid(pos) == 1:
@@ -299,7 +299,7 @@ def unit_tick(e: dict):
 
                 nls.push_info(nls_sender, "Docked and transfering blocks...")
                 
-                if not e["is_docked"]:
+                if not e["is_docked"] and target:
                     e["is_docked"] = True
                     en.get_entity("player_base")["units_undocked"] -= 1
 
@@ -384,14 +384,16 @@ def unit_tick(e: dict):
             p = sig.find_closest_substation(gp, e["base_dock_pos"])
             
             # exclusive pathfind only on substations not base
-            if p == e["base_dock_pos"]:
-                path = astar.pathfind(gp, p)
+            if p == e["base_dock_pos"] or task[1]:
+                path = astar.pathfind(gp, e["base_dock_pos"])
+                is_base = True
             else:
                 path = astar.pathfind(gp, p, True)
+                is_base = False
 
             if not path == None:
                 e["current_path"] = path
-                e["path_target_dock"] = True
+                e["path_target_dock"] = is_base
             else:
                 # should *never* happen
                 nls.push_error(nls_sender, "Can't find a path to docking port!")

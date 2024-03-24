@@ -244,7 +244,7 @@ def in_game_loop():
 
             if keys[pg.K_r] and not dock_base_pressed and is_selected_unit and un.has_signal(selected_entity):
                 dock_base_pressed = True
-                un.add_dock_task(selected_entity, is_shift)
+                un.add_dock_task(selected_entity, is_shift, keys[pg.K_LALT])
             elif not keys[pg.K_r]:
                 dock_base_pressed = False
 
