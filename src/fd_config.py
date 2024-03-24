@@ -6,14 +6,14 @@ empty_color = (8, 8, 8)
 fog_color = (2, 2, 2)
 
 stone_color = (127, 127, 127)
-oxy_color = (200, 200, 200)
+oxy_color = (164, 164, 255)
 goal_color = (64, 245, 64)
+border_color = (100, 80, 100)
 
 loading_status_texts = (
     "> Undocking...",
     "> Searching for a suitable location...",
     "> Traveling to location...",
-    "> Searching for a landing location...",
     "> Landing at location...",
     "> Get ready for deployment!"
 )
@@ -47,6 +47,7 @@ timer_warn_at_time = 25
 level_size = (500, 500)
 
 fill_percent = 25
+border_size = 3
 level_seed = None # random
 
 num_of_oxy_deposits_min_max = (80, 100)
@@ -62,6 +63,7 @@ mine_times = (
     .02, # stone
     .15, # oxy
     1, # goal
+    float('inf'), # border (infinite)
 )
 
 move_time = .005
@@ -83,10 +85,10 @@ struct_colors = (
     (102, 200, 102)
 )
 
-oxy_to_power_time = 30
+oxy_to_power_time = 10
 timer_eta_zero_offset = 5
 
-initial_base_oxy_count = 25
+initial_base_oxy_count = 80
 
 struct_power_usages = (
     1,

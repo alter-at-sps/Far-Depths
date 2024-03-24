@@ -327,6 +327,24 @@ def gen_level(seed, fill_percent):
         set_circle((x, y), size ** 2, 3)
 
         level_gen_yield()
+    
+    # generate level borders
+
+    for i in range(conf.level_size[0]):
+        for j in range(conf.border_size):
+            level[i][j] = 4
+
+    for i in range(conf.level_size[0]):
+        for j in range(conf.border_size):
+            level[i][conf.level_size[1] - 1 - j] = 4
+    
+    for i in range(conf.level_size[1]):
+        for j in range(conf.border_size):
+            level[j][i] = 4
+
+    for i in range(conf.level_size[1]):
+        for j in range(conf.border_size):
+            level[conf.level_size[0] - 1 - j][i] = 4
 
     # pre render level
 
@@ -477,28 +495,32 @@ color_lib = [
     conf.stone_color,
     conf.oxy_color,
     conf.goal_color,
+    conf.border_color,
 ]
 
 def pre_render_level():
     global level_surface_damaged
 
     for i, p in enumerate(level_surface_damaged):
-        p = inbounds(p)
-        
         x, y = p
         sp = cam.translate(grid_to_world_space(p), (point_size, point_size))
         sp = (sp[0] + point_size / 2, sp[1] + point_size / 2, *sp[2:4])
 
-        val = get_pixel(p)
+        # kind of an expensive if to do inside a hot loop but never mind
+        if p[0] >= 0 and p[0] < conf.level_size[0] and p[1] >= 0 and p[1] < conf.level_size[1]:
+            val = get_pixel(p)
 
-        pg.draw.rect(level_fow_surface, pg.Color(*conf.fog_color, int((18 - min(level_fow[x][y], 18)) * (255 / 18))), sp)
+            pg.draw.rect(level_fow_surface, pg.Color(*conf.fog_color, int((18 - min(level_fow[x][y], 18)) * (255 / 18))), sp)
 
-        pg.draw.rect(level_surface, color_lib[val], sp)
+            pg.draw.rect(level_surface, color_lib[val], sp)
 
-        if level_mark[x][y] > 0:
-            pg.draw.rect(level_surface, (255, 0, 0), (sp[0] + mark_margin, sp[1] + mark_margin, sp[2] - mark_margin * 2, sp[3] - mark_margin * 2))
-        # elif level_navgrid[x][y] == 1:
-            # pg.draw.rect(level_surface, (102, 255, 255), sp)
+            if level_mark[x][y] > 0:
+                pg.draw.rect(level_surface, (255, 0, 0), (sp[0] + mark_margin, sp[1] + mark_margin, sp[2] - mark_margin * 2, sp[3] - mark_margin * 2))
+            # elif level_navgrid[x][y] == 1:
+                # pg.draw.rect(level_surface, (102, 255, 255), sp)
+        else:
+            pg.draw.rect(level_fow_surface, conf.fog_color, sp)
+            pg.draw.rect(level_surface, conf.fog_color, sp)
 
     level_surface_damaged.clear()
 

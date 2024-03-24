@@ -119,7 +119,7 @@ def set_next_to_mine(e, finished_point, mining_queue: set):
         p = ((finished_point[0] + p[0], finished_point[1] + p[1]))
 
         # check if already mined out and skip and if already being mined by a different unit (can't remove here yet)
-        if lvl.get_pixel(p) == 0 or p in currently_being_mined_global:
+        if lvl.get_pixel(lvl.inbounds(p)) == 0 or p in currently_being_mined_global:
             continue
 
         if p in mining_queue:

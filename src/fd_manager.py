@@ -223,7 +223,7 @@ def in_game_loop():
                 wm_pos = cam.inverse_translate(mouse_pos)
                 gm_pos = lvl.world_to_grid_space(wm_pos)
 
-                un.add_move_task(selected_entity, gm_pos, is_shift)
+                un.add_move_task(selected_entity, lvl.inbounds(gm_pos), is_shift)
             elif not pg.mouse.get_pressed()[2]:
                 is_right_pressed = False
 
@@ -266,7 +266,7 @@ def in_game_loop():
             # mark area for mining
             if not final_drag_area == None:
                 w_drag_area = (cam.inverse_translate(final_drag_area[0]), cam.inverse_translate(final_drag_area[1]))
-                g_drag_area = (lvl.world_to_grid_space(w_drag_area[0]), lvl.world_to_grid_space(w_drag_area[1]))
+                g_drag_area = (lvl.inbounds(lvl.world_to_grid_space(w_drag_area[0])), lvl.inbounds(lvl.world_to_grid_space(w_drag_area[1])))
 
                 mining_queue = un.create_mining_queue(g_drag_area)
 

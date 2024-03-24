@@ -43,7 +43,7 @@ def pathfind(start_point, end_point, end_exclusive = False):
         found_point = False
 
         for offset in [ (1, 0), (0, 1), (-1, 0), (0, -1) ]:
-            if lvl.get_pixel_navgrid((end_point[0] + offset[0], end_point[1] + offset[1])) == 1:
+            if lvl.get_pixel_navgrid(lvl.inbounds((end_point[0] + offset[0], end_point[1] + offset[1]))) == 1:
                 found_point = True
                 break
         
