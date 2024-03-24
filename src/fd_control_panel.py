@@ -80,6 +80,9 @@ def ctl_on_click(e: dict, click):
         return
 
     if e["panel_data"]["type"] == 0:
+        if e["panel_data"]["lost_signal"]:
+            return
+
         # build button
         if cam.is_click_on_ui(e["build_ui_trans"], click):
             rlib.ui_mode = 1
@@ -109,31 +112,38 @@ def ctl_tick(e: dict):
         data["selected_title"] = (sel["unit_index"] - 1, sel["pretty_name"])
         data["type"] = 0
 
-        busy_task = sel.get("busy_with")
-        if not busy_task == None:
-            if busy_task[0] == 0:
-                data["status"] = "Mining..."
-            elif busy_task[0] == 1:
-                if not sel.get("path_target_mine") == None:
+        if un.has_signal(sel):
+            data["lost_signal"] = False
+
+            busy_task = sel.get("busy_with")
+            if not busy_task == None:
+                if busy_task[0] == 0:
                     data["status"] = "Mining..."
-                elif not sel.get("path_target_dock", -1) == -1:
-                    data["status"] = "Travelling To Dock..."
+                elif busy_task[0] == 1:
+                    if not sel.get("path_target_mine") == None:
+                        data["status"] = "Mining..."
+                    elif not sel.get("path_target_dock", -1) == -1:
+                        data["status"] = "Travelling To Dock..."
+                    else:
+                        data["status"] = "Travelling..."
+
+                elif busy_task[0] == 2:
+                    data["status"] = "Transfering..."
+                elif busy_task[0] == 3:
+                    data["status"] = "Building..."
                 else:
-                    data["status"] = "Travelling..."
-                
-            elif busy_task[0] == 2:
-                data["status"] = "Transfering..."
-            elif busy_task[0] == 3:
-                data["status"] = "Building..."
-            else:
-                raise ValueError("unknown busy task type in ctl_tick")
-        elif sel["already_idle"]:
-            data["status"] = "Idle"
+                    raise ValueError("unknown busy task type in ctl_tick")
+            elif sel["already_idle"]:
+                data["status"] = "Idle"
+        else:
+            data["lost_signal"] = True
+            data["status"] = "Signal lost!"
         
         data["materials"] = sel["stored_materials"]
     else:
         data["selected_title"] = sel["pretty_name"]
         data["type"] = 1
+        data["lost_signal"] = False
 
         data["status"] = "Online"
 

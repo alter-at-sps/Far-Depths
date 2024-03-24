@@ -228,7 +228,7 @@ def in_game_loop():
                 cam_x, cam_y = selected_entity["transform"][0]
                 cam.set_camera((int(cam_x), int(cam_y)))
 
-            if pg.mouse.get_pressed()[2] and not is_right_pressed and is_selected_unit:
+            if pg.mouse.get_pressed()[2] and not is_right_pressed and is_selected_unit and un.has_signal(selected_entity):
                 is_right_pressed = True
 
                 mouse_pos = pg.mouse.get_pos()
@@ -242,7 +242,7 @@ def in_game_loop():
             if keys[pg.K_e] and is_selected_unit:
                 rlib.ui_mode = 1
 
-            if keys[pg.K_r] and not dock_base_pressed and is_selected_unit:
+            if keys[pg.K_r] and not dock_base_pressed and is_selected_unit and un.has_signal(selected_entity):
                 dock_base_pressed = True
                 un.add_dock_task(selected_entity, is_shift)
             elif not keys[pg.K_r]:
@@ -276,22 +276,21 @@ def in_game_loop():
                 drag_area = ((min(drag_start_pos[0], pg.mouse.get_pos()[0]), min(drag_start_pos[1], pg.mouse.get_pos()[1])), (max(drag_start_pos[0], pg.mouse.get_pos()[0]), max(drag_start_pos[1], pg.mouse.get_pos()[1])))
 
             # mark area for mining
-            if not final_drag_area == None:
+            if not final_drag_area == None and un.has_signal(selected_entity):
                 w_drag_area = (cam.inverse_translate(final_drag_area[0]), cam.inverse_translate(final_drag_area[1]))
                 g_drag_area = (lvl.inbounds(lvl.world_to_grid_space(w_drag_area[0])), lvl.inbounds(lvl.world_to_grid_space(w_drag_area[1])))
 
                 mining_queue = un.create_mining_queue(g_drag_area)
 
-
                 if not len(mining_queue) == 0:
                     # lvl.set_pixels_for_mining(mining_queue)
-                    un.add_mining_task(en.get_entity(f"unit_{selected_unit}"), mining_queue, is_shift)
+                    un.add_mining_task(selected_entity, mining_queue, is_shift)
         
         elif rlib.ui_mode == 1: # unit build mode
             if keys[pg.K_ESCAPE]:
                 rlib.ui_mode = 0
 
-            if not click_consumed and not is_pressed and pg.mouse.get_pressed()[0]:
+            if not click_consumed and not is_pressed and pg.mouse.get_pressed()[0] and un.has_signal(selected_entity):
                 w_struct_loc = cam.inverse_translate(pg.mouse.get_pos())
                 g_struct_loc = lvl.world_to_grid_space(w_struct_loc)
 

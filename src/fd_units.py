@@ -76,6 +76,9 @@ def interupt_busy_unit(e):
         else: 
             raise ValueError("invalid task type on busy_interupt")
 
+def has_signal(e):
+    return not e["active_transmitter"] == None
+
 def add_mining_task(e, mining_queue, append_task):
     if not append_task:
         clear_unit_tasks(e)
@@ -346,7 +349,7 @@ def unit_tick(e: dict):
     task_queue = e["task_queue"]
 
     if e.get("busy_with") == None and len(task_queue) == 0 and not e["already_idle"]:
-        if not e["active_transmitter"] == True:
+        if not e["active_transmitter"] == None:
             nls.push_warn(nls_sender, "Finished all tasks in my queue, idling...") 
         else:
             add_dock_task(e, False)

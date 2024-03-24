@@ -456,6 +456,9 @@ def ctl_renderer(e, sur):
     status_area = (panel_render_area[0] + panel_render_area[2] // 2 - status_area[2] // 2, panel_render_area[1] + 90 - status_area[3] // 2)
     font.render_to(sur, status_area, status_text, conf.ui_foreground_faded_color, size=14)
 
+    if data["lost_signal"]:
+        return
+
     if data["type"] == 0:
         # build button
 
@@ -486,7 +489,7 @@ def ctl_renderer(e, sur):
 
         font.render_to(sur, dock_text_area, "Dock to base [r]", conf.ui_foreground_color, size=12)
 
-    elif data["type"] == 1:
+    else:
         # depart button
 
         depart_border_area = cam.translate_ui(e["depart_ui_trans"])
