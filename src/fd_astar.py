@@ -79,10 +79,10 @@ def pathfind(start_point, end_point, end_exclusive = False):
         open_list.pop(current_pos)
         closed_list[current_pos] = current_node
 
-        if current_pos == end_point:
+        if not end_exclusive and current_pos == end_point:
             return reconstruct_path(closed_list, current_pos)
 
-        if end_exclusive and abs(current_pos[0] - end_point[0]) + abs(current_pos[1] - end_point[1]) <= 1:
+        elif end_exclusive and abs(current_pos[0] - end_point[0]) + abs(current_pos[1] - end_point[1]) == 1:
              return reconstruct_path(closed_list, current_pos)
 
         # check adjacent points

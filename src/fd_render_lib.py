@@ -310,8 +310,8 @@ def struct_renderer(e, sur):
     trans = e["transform"]
     render_area = cam.translate(trans[0], trans[1])
 
-    pg.draw.polygon(sur, conf.struct_colors[e["struct_type"]], ((render_area[0] + render_area[2] // 2, render_area[1]), (render_area[0], render_area[1] + render_area[3]), (render_area[0] + render_area[2], render_area[1] + render_area[3])))
-    # pg.draw.rect(sur, conf.struct_colors[e["struct_type"]], render_area)
+    # pg.draw.polygon(sur, conf.struct_colors[e["struct_type"]], ((render_area[0] + render_area[2] // 2, render_area[1]), (render_area[0], render_area[1] + render_area[3]), (render_area[0] + render_area[2], render_area[1] + render_area[3])))
+    pg.draw.rect(sur, conf.struct_colors[e["struct_type"]], render_area)
 
 def struct_early_renderer(e, sur):
     trans = e["transform"]
@@ -320,7 +320,7 @@ def struct_early_renderer(e, sur):
         p1 = cam.translate_position(trans[0])
         p2 = cam.translate_position(e["linked_trans"])
 
-        pg.draw.line(sur, (0, 255, 255), p1, p2, 10)
+        pg.draw.line(sur, (64, 64, 64), p1, p2, 10)
 
 def struct_ghost_renderer(e, sur):
     if not ui_mode == 1:
@@ -329,7 +329,9 @@ def struct_ghost_renderer(e, sur):
     trans = e["transform"]
     render_area = cam.translate(trans[0], trans[1])
 
-    pg.draw.polygon(sur, (127, 127, 127), ((render_area[0] + render_area[2] // 2, render_area[1]), (render_area[0], render_area[1] + render_area[3]), (render_area[0] + render_area[2], render_area[1] + render_area[3])))
+    # pg.draw.polygon(sur, (127, 127, 127), ((render_area[0] + render_area[2] // 2, render_area[1]), (render_area[0], render_area[1] + render_area[3]), (render_area[0] + render_area[2], render_area[1] + render_area[3])))
+    col = conf.struct_colors[e["struct_index"]]
+    pg.draw.rect(sur, (col[0] // 2, col[1] // 2, col[2] // 2), render_area)
 
 # ui globals
 

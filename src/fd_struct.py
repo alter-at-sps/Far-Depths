@@ -60,3 +60,4 @@ def struct_tick(e: dict):
 def struct_ghost_tick(e: dict):
     pos = lvl.grid_to_world_space(lvl.world_to_grid_space(cam.inverse_translate(pg.mouse.get_pos())))
     e["transform"][0] = (pos[0] + lvl.point_size // 2, pos[1] + lvl.point_size // 2)
+    e["struct_index"] = en.get_entity("build_select")["selected_index"]

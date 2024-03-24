@@ -88,6 +88,8 @@ struct_colors = (
     (102, 200, 102)
 )
 
+pipeline_color = (64, 64, 64)
+
 oxy_to_power_time = 20
 timer_eta_zero_offset = 5
 
@@ -134,5 +136,5 @@ secret_titles = (
 
 # dev options
 
-dev_fastmap = False
+dev_fastmap = True
 dev_frametimes = False

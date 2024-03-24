@@ -291,8 +291,8 @@ def unit_tick(e: dict):
                 else:
                     raise SyntaxError("mining global lock caugth too late.")
             
-            target = e.pop("path_target_dock", False)
-            if target:
+            target = e.pop("path_target_dock", None)
+            if not target == None:
                 if e["auto_return"]:
                     nls.push_error(nls_sender, "Auto-docked because of a signal loss!")
                     e["auto_return"] = False
@@ -381,7 +381,13 @@ def unit_tick(e: dict):
                 nls.push_error(nls_sender, "Can't find a path to the next location!")
 
         elif task[0] == 2: # dock task
-            path = astar.pathfind(gp, sig.find_closest_substation(gp, e["base_dock_pos"]))
+            p = sig.find_closest_substation(gp, e["base_dock_pos"])
+            
+            # exclusive pathfind only on substations not base
+            if p == e["base_dock_pos"]:
+                path = astar.pathfind(gp, p)
+            else:
+                path = astar.pathfind(gp, p, True)
 
             if not path == None:
                 e["current_path"] = path
