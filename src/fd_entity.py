@@ -50,6 +50,7 @@ def reset():
 # common system
 
 def render_entities(surface):
+    call_system("on_early_frame", surface)
     call_system("on_frame", surface)
     # call_system("on_late_frame", surface)
 

@@ -313,6 +313,15 @@ def struct_renderer(e, sur):
     pg.draw.polygon(sur, conf.struct_colors[e["struct_type"]], ((render_area[0] + render_area[2] // 2, render_area[1]), (render_area[0], render_area[1] + render_area[3]), (render_area[0] + render_area[2], render_area[1] + render_area[3])))
     # pg.draw.rect(sur, conf.struct_colors[e["struct_type"]], render_area)
 
+def struct_early_renderer(e, sur):
+    trans = e["transform"]
+
+    if e["struct_type"] == 1:
+        p1 = cam.translate_position(trans[0])
+        p2 = cam.translate_position(e["linked_trans"])
+
+        pg.draw.line(sur, (0, 255, 255), p1, p2, 10)
+
 def struct_ghost_renderer(e, sur):
     if not ui_mode == 1:
         return
@@ -528,59 +537,59 @@ def ctl_build_renderer(e, sur):
     pg.draw.rect(sur, conf.ui_foreground_color, render_area)
     pg.draw.rect(sur, conf.ui_background_color, panel_render_area)
 
-    # extender
+    # transceiver
 
-    extender_border_area = cam.translate_ui(e["extender_ui_trans"])
-    extender_area = (extender_border_area[0] + conf.ctl_button_border_size, extender_border_area[1] + conf.ctl_button_border_size, extender_border_area[2] - conf.ctl_button_border_size * 2, extender_border_area[3] - conf.ctl_button_border_size * 2)
+    transceiver_border_area = cam.translate_ui(e["transceiver_ui_trans"])
+    transceiver_area = (transceiver_border_area[0] + conf.ctl_button_border_size, transceiver_border_area[1] + conf.ctl_button_border_size, transceiver_border_area[2] - conf.ctl_button_border_size * 2, transceiver_border_area[3] - conf.ctl_button_border_size * 2)
 
-    pg.draw.rect(sur, conf.ui_foreground_color if e["selected_index"] == 0 else conf.ui_foreground_faded_color, extender_border_area)
-    pg.draw.rect(sur, conf.ui_background_color, extender_area)
+    pg.draw.rect(sur, conf.ui_foreground_color if e["selected_index"] == 0 else conf.ui_foreground_faded_color, transceiver_border_area)
+    pg.draw.rect(sur, conf.ui_background_color, transceiver_area)
 
-    extender_text_area = font.get_rect("Signal", size=12)
-    extender_text_area = (extender_area[0] + extender_area[2] // 2 - extender_text_area[2] // 2, extender_area[1] + extender_area[3] // 2 - extender_text_area[3])
+    transceiver_text_area = font.get_rect("Signal", size=12)
+    transceiver_text_area = (transceiver_area[0] + transceiver_area[2] // 2 - transceiver_text_area[2] // 2, transceiver_area[1] + transceiver_area[3] // 2 - transceiver_text_area[3])
 
-    font.render_to(sur, extender_text_area, "Signal", conf.ui_foreground_color, size=12)
+    font.render_to(sur, transceiver_text_area, "Signal", conf.ui_foreground_color, size=12)
 
-    extender_text_area = font.get_rect("Extender", size=12)
-    extender_text_area = (extender_area[0] + extender_area[2] // 2 - extender_text_area[2] // 2, extender_area[1] + extender_area[3] // 2)
+    transceiver_text_area = font.get_rect("Transceiver", size=12)
+    transceiver_text_area = (transceiver_area[0] + transceiver_area[2] // 2 - transceiver_text_area[2] // 2, transceiver_area[1] + transceiver_area[3] // 2)
 
-    font.render_to(sur, extender_text_area, "Extender", conf.ui_foreground_color, size=12)
+    font.render_to(sur, transceiver_text_area, "Transceiver", conf.ui_foreground_color, size=12)
 
-    # scanner
+    # substation
 
-    scanner_border_area = cam.translate_ui(e["scanner_ui_trans"])
-    scanner_area = (scanner_border_area[0] + conf.ctl_button_border_size, scanner_border_area[1] + conf.ctl_button_border_size, scanner_border_area[2] - conf.ctl_button_border_size * 2, scanner_border_area[3] - conf.ctl_button_border_size * 2)
+    substation_border_area = cam.translate_ui(e["substation_ui_trans"])
+    substation_area = (substation_border_area[0] + conf.ctl_button_border_size, substation_border_area[1] + conf.ctl_button_border_size, substation_border_area[2] - conf.ctl_button_border_size * 2, substation_border_area[3] - conf.ctl_button_border_size * 2)
 
-    pg.draw.rect(sur, conf.ui_foreground_color if e["selected_index"] == 1 else conf.ui_foreground_faded_color, scanner_border_area)
-    pg.draw.rect(sur, conf.ui_background_color, scanner_area)
+    pg.draw.rect(sur, conf.ui_foreground_color if e["selected_index"] == 1 else conf.ui_foreground_faded_color, substation_border_area)
+    pg.draw.rect(sur, conf.ui_background_color, substation_area)
 
-    scanner_text_area = font.get_rect("Proximity", size=12)
-    scanner_text_area = (scanner_area[0] + scanner_area[2] // 2 - scanner_text_area[2] // 2, scanner_area[1] + scanner_area[3] // 2 - scanner_text_area[3])
+    substation_text_area = font.get_rect("Pipeline", size=12)
+    substation_text_area = (substation_area[0] + substation_area[2] // 2 - substation_text_area[2] // 2, substation_area[1] + substation_area[3] // 2 - substation_text_area[3])
 
-    font.render_to(sur, scanner_text_area, "Proximity", conf.ui_foreground_color, size=12)
+    font.render_to(sur, substation_text_area, "Pipeline", conf.ui_foreground_color, size=12)
 
-    scanner_text_area = font.get_rect("Scanner", size=12)
-    scanner_text_area = (scanner_area[0] + scanner_area[2] // 2 - scanner_text_area[2] // 2, scanner_area[1] + scanner_area[3] // 2)
+    substation_text_area = font.get_rect("Substation", size=12)
+    substation_text_area = (substation_area[0] + substation_area[2] // 2 - substation_text_area[2] // 2, substation_area[1] + substation_area[3] // 2)
 
-    font.render_to(sur, scanner_text_area, "Scanner", conf.ui_foreground_color, size=12)
+    font.render_to(sur, substation_text_area, "Substation", conf.ui_foreground_color, size=12)
 
     # detector
 
-    detector_border_area = cam.translate_ui(e["detector_ui_trans"])
-    detector_area = (detector_border_area[0] + conf.ctl_button_border_size, detector_border_area[1] + conf.ctl_button_border_size, detector_border_area[2] - conf.ctl_button_border_size * 2, detector_border_area[3] - conf.ctl_button_border_size * 2)
-
-    pg.draw.rect(sur, conf.ui_foreground_color if e["selected_index"] == 2 else conf.ui_foreground_faded_color, detector_border_area)
-    pg.draw.rect(sur, conf.ui_background_color, detector_area)
-
-    detector_text_area = font.get_rect("Long Range", size=12)
-    detector_text_area = (detector_area[0] + detector_area[2] // 2 - detector_text_area[2] // 2, detector_area[1] + detector_area[3] // 2 - detector_text_area[3])
-
-    font.render_to(sur, detector_text_area, "Long Range", conf.ui_foreground_color, size=12)
-
-    detector_text_area = font.get_rect("Detector", size=12)
-    detector_text_area = (detector_area[0] + detector_area[2] // 2 - detector_text_area[2] // 2, detector_area[1] + detector_area[3] // 2)
-
-    font.render_to(sur, detector_text_area, "Detector", conf.ui_foreground_color, size=12)
+    # detector_border_area = cam.translate_ui(e["detector_ui_trans"])
+    # detector_area = (detector_border_area[0] + conf.ctl_button_border_size, detector_border_area[1] + conf.ctl_button_border_size, detector_border_area[2] - conf.ctl_button_border_size * 2, detector_border_area[3] - conf.ctl_button_border_size * 2)
+# 
+    # pg.draw.rect(sur, conf.ui_foreground_color if e["selected_index"] == 2 else conf.ui_foreground_faded_color, detector_border_area)
+    # pg.draw.rect(sur, conf.ui_background_color, detector_area)
+# 
+    # detector_text_area = font.get_rect("Long Range", size=12)
+    # detector_text_area = (detector_area[0] + detector_area[2] // 2 - detector_text_area[2] // 2, detector_area[1] + detector_area[3] // 2 - detector_text_area[3])
+# 
+    # font.render_to(sur, detector_text_area, "Long Range", conf.ui_foreground_color, size=12)
+# 
+    # detector_text_area = font.get_rect("Detector", size=12)
+    # detector_text_area = (detector_area[0] + detector_area[2] // 2 - detector_text_area[2] // 2, detector_area[1] + detector_area[3] // 2)
+# 
+    # font.render_to(sur, detector_text_area, "Detector", conf.ui_foreground_color, size=12)
 
 # game timer renderer
 

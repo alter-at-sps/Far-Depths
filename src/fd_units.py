@@ -6,6 +6,7 @@ import src.fd_notif as nls
 import src.fd_render as ren
 import src.fd_config as conf
 import src.fd_struct as st
+import src.fd_signal as sig
 
 # == Far Depths Unit AI and Base Controller ==
 
@@ -87,12 +88,11 @@ def add_move_task(e, target_point, append_task):
 
     e["task_queue"].append((1, target_point))
 
-# sub_index = None if docking to base
-def add_dock_task(e, sub_index, append_task):
+def add_dock_task(e, append_task):
     if not append_task:
         clear_unit_tasks(e)
 
-    e["task_queue"].append((2, sub_index))
+    e["task_queue"].append((2, ))
 
 def add_build_task(e, pos, struct, append_task):
     if not lvl.get_pixel_navgrid(pos) == 1:
@@ -229,19 +229,15 @@ def unit_tick(e: dict):
             elif task[0] == 1: # moving cooldown
                 pass
             elif task[0] == 2: # material transfer
-                if task[3] == None:
-                    base_mats = en.get_entity("player_base")["stored_materials"]
+                base_mats = en.get_entity("player_base")["stored_materials"]
 
-                    base_mats[task[2]] += 1
-                    e["stored_materials"][task[2]] -= 1
-                    e["transfer_size"] += 1
-                else:
-                    pass
-                    # add_to_sub(task[3], [ task[2] ])
+                base_mats[task[2]] += 1
+                e["stored_materials"][task[2]] -= 1
+                e["transfer_size"] += 1
 
                 for i, mat in enumerate(e["stored_materials"]):
                     if not mat == None and not mat == 0:
-                        e["busy_with"] = [2, conf.transfer_time, i, task[3]]
+                        e["busy_with"] = [2, conf.transfer_time, i]
                         break
                 
                 if e.get("busy_with") == None:
@@ -292,8 +288,12 @@ def unit_tick(e: dict):
                 else:
                     raise SyntaxError("mining global lock caugth too late.")
             
-            target = e.pop("path_target_dock", -1)
-            if target == None or not target == -1:
+            target = e.pop("path_target_dock", False)
+            if target:
+                if e["auto_return"]:
+                    nls.push_error(nls_sender, "Auto-docked because of a signal loss!")
+                    e["auto_return"] = False
+
                 nls.push_info(nls_sender, "Docked and transfering blocks...")
                 
                 if not e["is_docked"]:
@@ -302,7 +302,7 @@ def unit_tick(e: dict):
 
                 for i, mat in enumerate(e["stored_materials"]):
                     if not mat == None and not mat == 0:
-                        e["busy_with"] = [2, conf.transfer_time, i, target]
+                        e["busy_with"] = [2, conf.transfer_time, i]
                         break
             
             target = e.pop("path_target_build", None)
@@ -310,11 +310,16 @@ def unit_tick(e: dict):
                 mats = e["stored_materials"]
                 
                 if mats[2] - conf.struct_build_costs[target[1]][0] >= 0 and mats[3] - conf.struct_build_costs[target[1]][1] >= 0:
-                    nls.push_info(nls_sender, "Building a new structure...")
+                    if (not target[1] == 0 or not sig.find_signal(target[0]) == None) and (not target[1] == 1 or not sig.find_pipeline_sink(target[0]) == None):
+                        nls.push_info(nls_sender, "Building a new structure...")
 
-                    # resources are consumed after the structure is done
-                    e["busy_with"] = [3, conf.struct_build_times[target[1]], target]
-
+                        # resources are consumed after the structure is done
+                        e["busy_with"] = [3, conf.struct_build_times[target[1]], target]
+                    else:
+                        if target[1] == 0:
+                            nls.push_error(nls_sender, "Can't build a Transceiver out of range!")
+                        else:
+                            nls.push_error(nls_sender, "Can't build a Substation out of range!")
                 else:
                     nls.push_error(nls_sender, "Not enough materials to build structure!")
                     
@@ -329,13 +334,24 @@ def unit_tick(e: dict):
             lvl.unfog_area([ next_pos ], 24)
 
             e["busy_with"] = [1, conf.move_time]
-    
+
+    # update signal range
+
+    gp = e["grid_trans"]
+    if e["active_transmitter"] == None or not sig.check_signal(e["active_transmitter"], gp):
+        e["active_transmitter"] = sig.find_signal(gp)
+
     # setup the next task if idle
 
     task_queue = e["task_queue"]
 
     if e.get("busy_with") == None and len(task_queue) == 0 and not e["already_idle"]:
-        nls.push_warn(nls_sender, "Finished all tasks in my queue, idling...") 
+        if not e["active_transmitter"] == True:
+            nls.push_warn(nls_sender, "Finished all tasks in my queue, idling...") 
+        else:
+            add_dock_task(e, False)
+            e["auto_return"] = True
+        
         e["already_idle"] = True
     elif not e.get("busy_with") == None or not len(task_queue) == 0:
         e["already_idle"] = False 
@@ -348,10 +364,10 @@ def unit_tick(e: dict):
 
             nls.push_info(nls_sender, f"Starting a mining operation of {len(task[1])} blocks.")
 
-            set_next_to_mine(e, e["grid_trans"], task[1])
+            set_next_to_mine(e, gp, task[1])
                 
         elif task[0] == 1: # move task
-            path = astar.pathfind(e["grid_trans"], task[1])
+            path = astar.pathfind(gp, task[1])
 
             if not path == None:
                 if not len(path) == 0:
@@ -362,21 +378,17 @@ def unit_tick(e: dict):
                 nls.push_error(nls_sender, "Can't find a path to the next location!")
 
         elif task[0] == 2: # dock task
-            if task[1] == None:
-                path = astar.pathfind(e["grid_trans"], e["base_dock_pos"])
-            else:
-                pass
-                # path = astar.pathfind(e["grid_trans"], ksa)
+            path = astar.pathfind(gp, sig.find_closest_substation(gp, e["base_dock_pos"]))
 
             if not path == None:
                 e["current_path"] = path
-                e["path_target_dock"] = task[1]
+                e["path_target_dock"] = True
             else:
                 # should *never* happen
                 nls.push_error(nls_sender, "Can't find a path to docking port!")
 
         elif task[0] == 3: # build task
-            path = astar.pathfind(e["grid_trans"], task[1], True)
+            path = astar.pathfind(gp, task[1], True)
 
             if not path == None:
                 e["current_path"] = path

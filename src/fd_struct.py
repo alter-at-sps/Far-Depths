@@ -4,6 +4,7 @@ import src.fd_entity as en
 import src.fd_render_lib as rlib
 import src.fd_camera as cam
 import src.fd_level as lvl
+import src.fd_signal as sig
 
 # == Far Depths Structure Controllers ==
 
@@ -23,6 +24,7 @@ def spawn_struct(p, t):
         "grid_trans": p,
 
         "on_frame": rlib.struct_renderer,
+        "on_early_frame": rlib.struct_early_renderer,
         "tick": struct_tick,
         "struct_type": t,
 
@@ -30,6 +32,14 @@ def spawn_struct(p, t):
     })
 
     next_struct_index += 1
+
+    if t == 0:
+        sig.add_transceiver(p)
+    elif t == 1:
+        rp = lvl.grid_to_world_space(sig.find_pipeline_sink(p)[0])
+        s["linked_trans"] = (rp[0] + lvl.point_size // 2, rp[1] + lvl.point_size // 2)
+
+        sig.add_substation(p)
 
     return s
 

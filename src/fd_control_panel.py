@@ -40,7 +40,6 @@ def setup_ctl_panel():
 
 
         "selected_entity": None,
-        "selected_build": 0,
 
         "panel_data": {}
     })
@@ -52,23 +51,23 @@ def setup_ctl_panel():
             (250, 100)
         ],
 
-        "extender_ui_trans": [
+        "transceiver_ui_trans": [
             (2, 1),
             (-250 + 15, 15),
-            (-250 + 470 // 3 + 15, 100 - 15),
+            (-250 + 470 // 2 + 15, 100 - 15),
         ],
 
-        "scanner_ui_trans": [
+        "substation_ui_trans": [
             (2, 1),
-            (-250 + 470 // 3 + 15, 15),
-            (-250 + 470 // 3 * 2 + 15, 100 - 15),
+            (-250 + 470 // 2 + 15, 15),
+            (-250 + 470 // 2 * 2 + 15, 100 - 15),
         ],
 
-        "detector_ui_trans": [
-            (2, 1),
-            (-250 + 470 // 3 * 2 + 15, 15),
-            (-250 + 470 // 3 * 3 + 15, 100 - 15),
-        ],
+        # "detector_ui_trans": [
+        #     (2, 1),
+        #     (-250 + 470 // 3 * 2 + 15, 15),
+        #     (-250 + 470 // 3 * 3 + 15, 100 - 15),
+        # ],
 
         "on_ui_frame": rlib.ctl_build_renderer,
         "on_click": ctl_build_on_click,
@@ -88,7 +87,7 @@ def ctl_on_click(e: dict, click):
 
         # dock button
         elif cam.is_click_on_ui(e["dock_ui_trans"], click):
-            un.add_dock_task(e["selected_entity"], None, False)
+            un.add_dock_task(e["selected_entity"], False)
             return True
     elif e["panel_data"]["type"] == 1:
         # depart button
@@ -142,17 +141,17 @@ def ctl_build_on_click(e: dict, click):
     if not rlib.ui_mode == 1:
         return
 
-    if cam.is_click_on_ui(e["extender_ui_trans"], click):
+    if cam.is_click_on_ui(e["transceiver_ui_trans"], click):
         e["selected_index"] = 0
         return True
     
-    elif cam.is_click_on_ui(e["scanner_ui_trans"], click):
+    elif cam.is_click_on_ui(e["substation_ui_trans"], click):
         e["selected_index"] = 1
         return True
 
-    elif cam.is_click_on_ui(e["detector_ui_trans"], click):
-        e["selected_index"] = 2
-        return True
+    # elif cam.is_click_on_ui(e["detector_ui_trans"], click):
+    #     e["selected_index"] = 2
+    #     return True
 
     # block click on level
     return cam.is_click_on_ui(e["ui_trans"], click)

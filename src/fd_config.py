@@ -60,12 +60,13 @@ goal_deposit_size_min_max = (6, 12)
 
 mine_times = (
     0, # air (unused)
-    .02, # stone
-    .15, # oxy
-    1, # goal
+    .2, # stone
+    .3, # oxy
+    .8, # goal
     float('inf'), # border (infinite)
 )
 
+# move_time = .2
 move_time = .005
 transfer_time = .05
 
@@ -76,7 +77,9 @@ unit_colors = (
     (0, 255, 0),
     (0, 255, 255),
     (255, 255, 0),
-    (255, 0, 255)
+    (255, 0, 255),
+    (255, 127, 0),
+    (127, 0, 255)
 )
 
 struct_colors = (
@@ -85,7 +88,7 @@ struct_colors = (
     (102, 200, 102)
 )
 
-oxy_to_power_time = 10
+oxy_to_power_time = 20
 timer_eta_zero_offset = 5
 
 initial_base_oxy_count = 80
@@ -107,6 +110,13 @@ struct_build_costs = (
     (10, 0),
     (15, 5)
 )
+
+base_signal_distance = 40
+substation_signal_distance = 35
+transceiver_signal_distance = 25
+
+base_pipeline_distance = 40
+substation_pipeline_distance = 40
 
 # menu
 

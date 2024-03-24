@@ -15,6 +15,7 @@ import src.fd_config as conf
 import src.fd_control_panel as ctl
 import src.fd_timer as ti
 import src.fd_struct as st
+import src.fd_signal as sig
 
 # == Far Depths Main Event Loop ==
 
@@ -86,7 +87,9 @@ def in_game_loop():
     lvl.set_pixel_navgrid(base_pos, 1) # initial navgrid origin
     lvl.unfog_area([ base_pos ], 64) # initial unfoged area
 
-    for i, unit in enumerate([ (0, -1), (1, -1), (-1, 0), (-1, 1) ], 1):
+    sig.setup_ranges(base_pos)
+
+    for i, unit in enumerate([ (0, -1), (1, -1), (2, -1), (0, 2), (1, 2), (2, 2) ], 1):
         en.create_entity(f"unit_{i}", {
             "transform": [
                 None, # set on ticks
@@ -118,6 +121,9 @@ def in_game_loop():
             "mining_queue": set(),
 
             "already_idle": True,
+
+            "active_transmitter": sig.find_signal((base_pos[0] + unit[0], base_pos[1] + unit[1])),
+            "auto_return": False,
 
             "is_docked": True,
         })
@@ -200,6 +206,12 @@ def in_game_loop():
             if keys[pg.K_4]:
                 selected_unit = 4
                 is_selected_unit = True
+            if keys[pg.K_5]:
+                selected_unit = 5
+                is_selected_unit = True
+            if keys[pg.K_6]:
+                selected_unit = 6
+                is_selected_unit = True
 
             if keys[pg.K_b]:
                 selected_unit = 0
@@ -212,7 +224,7 @@ def in_game_loop():
                 selected_entity = en.get_entity(f"player_base")
                 ctl.set_selected(selected_entity)
 
-            if (keys[pg.K_1] or keys[pg.K_2] or keys[pg.K_3] or keys[pg.K_4] or keys[pg.K_b]) and not is_shift:
+            if (keys[pg.K_1] or keys[pg.K_2] or keys[pg.K_3] or keys[pg.K_4] or keys[pg.K_5] or keys[pg.K_6] or keys[pg.K_b]) and not is_shift:
                 cam_x, cam_y = selected_entity["transform"][0]
                 cam.set_camera((int(cam_x), int(cam_y)))
 
@@ -232,7 +244,7 @@ def in_game_loop():
 
             if keys[pg.K_r] and not dock_base_pressed and is_selected_unit:
                 dock_base_pressed = True
-                un.add_dock_task(selected_entity, None, is_shift)
+                un.add_dock_task(selected_entity, is_shift)
             elif not keys[pg.K_r]:
                 dock_base_pressed = False
 
@@ -285,7 +297,7 @@ def in_game_loop():
 
                 is_pressed = True
 
-                un.add_build_task(selected_entity, g_struct_loc, en.get_entity("control_panel")["selected_build"], is_shift)
+                un.add_build_task(selected_entity, g_struct_loc, en.get_entity("build_select")["selected_index"], is_shift)
 
                 rlib.ui_mode = 0
 
