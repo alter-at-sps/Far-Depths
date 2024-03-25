@@ -5,6 +5,7 @@ import src.fd_render_lib as rlib
 import src.fd_camera as cam
 import src.fd_level as lvl
 import src.fd_signal as sig
+import src.fd_config as conf
 
 # == Far Depths Structure Controllers ==
 
@@ -18,7 +19,7 @@ def spawn_struct(p, t):
     s = en.create_entity(f"struct_{next_struct_index}", {
         "transform": [
             (pos[0] + lvl.point_size // 2, pos[1] + lvl.point_size // 2),
-            (18, 18)
+            (18, 18) if t == 1 else (6, 18)
         ],
 
         "grid_trans": p,
@@ -32,6 +33,7 @@ def spawn_struct(p, t):
     })
 
     next_struct_index += 1
+    en.get_entity("player_base")["power_usage"] += conf.struct_power_usages[t]
 
     if t == 0:
         sig.add_transceiver(p)
@@ -59,5 +61,8 @@ def struct_tick(e: dict):
 
 def struct_ghost_tick(e: dict):
     pos = lvl.grid_to_world_space(lvl.world_to_grid_space(cam.inverse_translate(pg.mouse.get_pos())))
-    e["transform"][0] = (pos[0] + lvl.point_size // 2, pos[1] + lvl.point_size // 2)
+
     e["struct_index"] = en.get_entity("build_select")["selected_index"]
+
+    e["transform"][0] = (pos[0] + lvl.point_size // 2, pos[1] + lvl.point_size // 2)
+    e["transform"][1] = (18, 18) if e["struct_index"] == 1 else (6, 18)

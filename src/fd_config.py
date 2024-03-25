@@ -66,8 +66,7 @@ mine_times = (
     float('inf'), # border (infinite)
 )
 
-# move_time = .2
-move_time = .005
+move_time = .2
 transfer_time = .05
 
 cam_speed = 500
@@ -83,14 +82,13 @@ unit_colors = (
 )
 
 struct_colors = (
-    (102, 102, 102),
     (200, 200, 200),
-    (102, 200, 102)
+    (225, 225, 225)
 )
 
 pipeline_color = (64, 64, 64)
 
-oxy_to_power_time = 20
+oxy_to_power_time = 40
 timer_eta_zero_offset = 5
 
 initial_base_oxy_count = 80
@@ -98,7 +96,6 @@ initial_base_oxy_count = 80
 struct_power_usages = (
     1,
     2,
-    8
 )
 
 struct_build_times = (
@@ -114,8 +111,8 @@ struct_build_costs = (
 )
 
 base_signal_distance = 40
-substation_signal_distance = 35
-transceiver_signal_distance = 25
+substation_signal_distance = 55
+transceiver_signal_distance = 50
 
 base_pipeline_distance = 40
 substation_pipeline_distance = 40
@@ -136,5 +133,5 @@ secret_titles = (
 
 # dev options
 
-dev_fastmap = True
+dev_fastmap = False
 dev_frametimes = False
