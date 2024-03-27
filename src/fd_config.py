@@ -50,8 +50,8 @@ fill_percent = 25
 border_size = 3
 level_seed = None # random
 
-num_of_oxy_deposits_min_max = (80, 100)
-oxy_deposit_size_min_max = (4, 10)
+num_of_oxy_deposits_min_max = (60, 70)
+oxy_deposit_size_min_max = (4, 8)
 
 num_of_goal_deposits_min_max = (20, 30)
 goal_deposit_size_min_max = (6, 12)
@@ -59,10 +59,10 @@ goal_deposit_size_min_max = (6, 12)
 # game behaviour
 
 mine_times = (
-    0, # air (unused)
-    .2, # stone
-    .3, # oxy
-    .8, # goal
+    None, # air (unused)
+    .8, # stone
+    .4, # oxy
+    2, # goal
     float('inf'), # border (infinite)
 )
 
@@ -94,28 +94,26 @@ timer_eta_zero_offset = 5
 initial_base_oxy_count = 80
 
 struct_power_usages = (
-    1,
-    2,
+    4,
+    6,
 )
 
 struct_build_times = (
     5,
-    8,
-    12
+    8
 )
 
 struct_build_costs = (
     (5, 0),
-    (10, 0),
-    (15, 5)
+    (10, 0)
 )
 
-base_signal_distance = 40
-substation_signal_distance = 55
-transceiver_signal_distance = 50
+base_signal_distance = 60
+substation_signal_distance = 85
+transceiver_signal_distance = 65
 
-base_pipeline_distance = 40
-substation_pipeline_distance = 40
+base_pipeline_distance = 75
+substation_pipeline_distance = 75
 
 # menu
 
