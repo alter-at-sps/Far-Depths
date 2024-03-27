@@ -348,7 +348,8 @@ def unit_tick(e: dict):
 
     task_queue = e["task_queue"]
 
-    if e.get("busy_with") == None and len(task_queue) == 0 and not e["already_idle"]:
+    b = e.get("busy_with")
+    if b == None and len(task_queue) == 0 and not e["already_idle"]:
         if not e["active_transmitter"] == None:
             nls.push_warn(nls_sender, "Finished all tasks in my queue, idling...") 
         else:
@@ -356,10 +357,13 @@ def unit_tick(e: dict):
             e["auto_return"] = True
         
         e["already_idle"] = True
-    elif not e.get("busy_with") == None or not len(task_queue) == 0:
-        e["already_idle"] = False 
+    elif not b == None and b[1] == float('inf') and e["active_transmitter"] == None:
+        add_dock_task(e, False)
+        e["auto_return"] = True   
+    elif not b == None or not len(task_queue) == 0:
+        e["already_idle"] = False       
 
-    if e.get("busy_with") == None and not len(task_queue) == 0:
+    if b == None and not len(task_queue) == 0:
         task = task_queue.pop(0)
 
         if task[0] == 0: # mining task
