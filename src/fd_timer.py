@@ -6,8 +6,8 @@ def setup_timer():
     timer = en.create_entity("timer_ui", {
         "ui_trans": [
             (2, 0),
-            (-110, 0),
-            (110, 60)
+            (-150, 0),
+            (150, 60)
         ],
 
         "on_ui_frame": rlib.timer_renderer,
@@ -25,3 +25,4 @@ def timer_tick(e: dict):
 
     e["eta"] = max(0, (base_mats[2] * conf.oxy_to_power_time // base["power_usage"]) - conf.timer_eta_zero_offset + (base["busy_generating"]))
     e["goal_mat_count"] = base_mats[3]
+    e["power_usage"] = base["power_usage"] / conf.oxy_to_power_time * 60

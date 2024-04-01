@@ -551,14 +551,19 @@ def ctl_build_renderer(e, sur):
     pg.draw.rect(sur, conf.ui_background_color, transceiver_area)
 
     transceiver_text_area = font.get_rect("Signal", size=12)
-    transceiver_text_area = (transceiver_area[0] + transceiver_area[2] // 2 - transceiver_text_area[2] // 2, transceiver_area[1] + transceiver_area[3] // 2 - transceiver_text_area[3])
+    transceiver_text_area = (transceiver_area[0] + transceiver_area[2] // 2 - transceiver_text_area[2] // 2, transceiver_area[1] + transceiver_area[3] // 2 - 8 - transceiver_text_area[3])
 
     font.render_to(sur, transceiver_text_area, "Signal", conf.ui_foreground_color, size=12)
 
     transceiver_text_area = font.get_rect("Transceiver", size=12)
-    transceiver_text_area = (transceiver_area[0] + transceiver_area[2] // 2 - transceiver_text_area[2] // 2, transceiver_area[1] + transceiver_area[3] // 2)
+    transceiver_text_area = (transceiver_area[0] + transceiver_area[2] // 2 - transceiver_text_area[2] // 2, transceiver_area[1] + transceiver_area[3] // 2 - 8)
 
     font.render_to(sur, transceiver_text_area, "Transceiver", conf.ui_foreground_color, size=12)
+
+    transceiver_text_area = font.get_rect(f"oxy cost: {conf.struct_build_costs[0][0]}", size=12)
+    transceiver_text_area = (transceiver_area[0] + transceiver_area[2] // 2 - transceiver_text_area[2] // 2, transceiver_area[1] + transceiver_area[3] // 2 + 10)
+
+    font.render_to(sur, transceiver_text_area, f"oxy cost: {conf.struct_build_costs[0][0]}", conf.ui_foreground_faded_color, size=12)
 
     # substation
 
@@ -569,14 +574,19 @@ def ctl_build_renderer(e, sur):
     pg.draw.rect(sur, conf.ui_background_color, substation_area)
 
     substation_text_area = font.get_rect("Pipeline", size=12)
-    substation_text_area = (substation_area[0] + substation_area[2] // 2 - substation_text_area[2] // 2, substation_area[1] + substation_area[3] // 2 - substation_text_area[3])
+    substation_text_area = (substation_area[0] + substation_area[2] // 2 - substation_text_area[2] // 2, substation_area[1] + substation_area[3] // 2 - 8 - substation_text_area[3])
 
     font.render_to(sur, substation_text_area, "Pipeline", conf.ui_foreground_color, size=12)
 
     substation_text_area = font.get_rect("Substation", size=12)
-    substation_text_area = (substation_area[0] + substation_area[2] // 2 - substation_text_area[2] // 2, substation_area[1] + substation_area[3] // 2)
+    substation_text_area = (substation_area[0] + substation_area[2] // 2 - substation_text_area[2] // 2, substation_area[1] + substation_area[3] // 2 - 8)
 
     font.render_to(sur, substation_text_area, "Substation", conf.ui_foreground_color, size=12)
+
+    substation_text_area = font.get_rect(f"oxy cost: {conf.struct_build_costs[1][0]}", size=12)
+    substation_text_area = (substation_area[0] + substation_area[2] // 2 - substation_text_area[2] // 2, substation_area[1] + substation_area[3] // 2 + 10)
+
+    font.render_to(sur, substation_text_area, f"oxy cost: {conf.struct_build_costs[1][0]}", conf.ui_foreground_faded_color, size=12)
 
     # detector
 
@@ -615,14 +625,14 @@ def timer_renderer(e, sur):
     eta_text = f"{int(e['eta'] // 60):0=2}:{int(e['eta'] % 60):0=2}"
     
     eta_area = font.get_rect(eta_text, size=22)
-    eta_area = (timer_render_area[0] + 20, timer_render_area[1] + 30 - eta_area[3] // 2)
+    eta_area = (timer_render_area[0] + timer_render_area[2] // 2 - eta_area[2] // 2, timer_render_area[1] + 30 - eta_area[3] // 2)
 
     font.render_to(sur, eta_area, eta_text, conf.ui_foreground_color, size=22)
 
-    eta_tag_area = font.get_rect("power eta:", size=10)
-    eta_tag_area = (timer_render_area[0] + 62 - eta_tag_area[2] // 2, timer_render_area[1] + 10 - eta_tag_area[3] // 2)
+    eta_tag_area = font.get_rect("eta:", size=10)
+    eta_tag_area = (timer_render_area[0] + timer_render_area[2] // 2 - eta_tag_area[2] // 2, timer_render_area[1] + 10 - eta_tag_area[3] // 2)
 
-    font.render_to(sur, eta_tag_area, "power eta:", conf.ui_foreground_color, size=10)
+    font.render_to(sur, eta_tag_area, "eta:", conf.ui_foreground_color, size=10)
 
     # draw goal mat
 
@@ -634,15 +644,35 @@ def timer_renderer(e, sur):
     else:
         tag_text = f"{round(count / (1000 * 1000), 1)}M"
     
-    tag_area = font.get_rect(tag_text, size=16)
-    tag_area = (timer_render_area[0] + 158 - tag_area[2] // 2, timer_render_area[1] + 30 - tag_area[3] // 2)
+    goal_area = font.get_rect(tag_text, size=16)
+    goal_area = (timer_render_area[0] + timer_render_area[2] // 2 + 95 - goal_area[2] // 2, timer_render_area[1] + 30 - goal_area[3] // 2)
 
-    font.render_to(sur, tag_area, tag_text, conf.ui_foreground_color, size=16)
+    font.render_to(sur, goal_area, tag_text, conf.ui_foreground_color, size=16)
 
-    tag_tag_area = font.get_rect("goal:", size=10)
-    tag_tag_area = (timer_render_area[0] + 158 - tag_tag_area[2] // 2, timer_render_area[1] + 10 - tag_tag_area[3] // 2)
+    goal_tag_area = font.get_rect("goal:", size=10)
+    goal_tag_area = (timer_render_area[0] + timer_render_area[2] // 2 + 95 - goal_tag_area[2] // 2, timer_render_area[1] + 10 - goal_tag_area[3] // 2)
 
-    font.render_to(sur, tag_tag_area, "goal:", conf.ui_foreground_color, size=10)
+    font.render_to(sur, goal_tag_area, "goal:", conf.ui_foreground_color, size=10)
+
+    # draw power usage
+
+    count = int(e['power_usage'])
+    if count < 1000:
+        tag_text = f"{count}"
+    elif count < 100 * 1000:
+        tag_text = f"{round(count / 1000, 1)}k"
+    else:
+        tag_text = f"{round(count / (1000 * 1000), 1)}M"
+
+    usage_area = font.get_rect(tag_text, size=16)
+    usage_area = (timer_render_area[0] + timer_render_area[2] // 2 - 95 - usage_area[2] // 2, timer_render_area[1] + 30 - usage_area[3] // 2)
+
+    font.render_to(sur, usage_area, tag_text, conf.ui_foreground_color, size=16)
+
+    usage_tag_area = font.get_rect("opm:", size=10)
+    usage_tag_area = (timer_render_area[0] + timer_render_area[2] // 2 - 95 - usage_tag_area[2] // 2, timer_render_area[1] + 10 - usage_tag_area[3] // 2)
+
+    font.render_to(sur, usage_tag_area, "opm:", conf.ui_foreground_color, size=10)
 
     # draw warning outline on low time
 
