@@ -511,6 +511,9 @@ def pre_render_level():
             val = get_pixel(p)
 
             pg.draw.rect(level_fow_surface, pg.Color(*conf.fog_color, int((18 - min(level_fow[x][y], 18)) * (255 / 18))), sp)
+            
+            # debug redraw vizualizer
+            # pg.draw.rect(ren.get_surface(), (0, 255, 255), sp)
 
             pg.draw.rect(level_surface, color_lib[val], sp)
 
@@ -535,3 +538,7 @@ def render_fow(sur):
         pre_render_level()
 
     sur.blit(level_fow_surface, (0, 0), special_flags=pg.BLEND_ALPHA_SDL2)
+
+    # uncomment for debug redraw vizualization
+    # if not len(level_surface_damaged) == 0:
+    #     pre_render_level()
