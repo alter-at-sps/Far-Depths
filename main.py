@@ -13,9 +13,9 @@ import src.fd_manager as mgr
 ren.reset_passes()
 
 # setup post-processing stack
-ren.add_pass(rlib.setup_basic_pass("src/shaders/fs_trig.vert", "src/shaders/crt_effect.frag"))
-ren.add_pass(rlib.setup_basic_pass("src/shaders/fs_trig.vert", "src/shaders/curve_effect.frag"))
-ren.add_pass(rlib.setup_bloom_pass("src/shaders/fs_trig.vert", "src/shaders/bloom_downsample.frag", "src/shaders/bloom_upsample.frag", "src/shaders/bloom_copy.frag", 6))
+ren.add_pass(rlib.setup_basic_pass("assets/shaders/fs_trig.vert", "assets/shaders/crt_effect.frag"))
+ren.add_pass(rlib.setup_basic_pass("assets/shaders/fs_trig.vert", "assets/shaders/curve_effect.frag"))
+ren.add_pass(rlib.setup_bloom_pass("assets/shaders/fs_trig.vert", "assets/shaders/bloom_downsample.frag", "assets/shaders/bloom_upsample.frag", "assets/shaders/bloom_copy.frag", 6))
 
 i = 0
 
