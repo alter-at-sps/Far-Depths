@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/far3.gif">
+  <img src="https://github.com/alter-at-sps/Far-Depths/blob/fd8e70ff39e42c842c514b4a392cfaf3169fbd61/assets/far3.gif">
 
   A Rouge-like RTS game around undersea mining in a hostile enviroment that is trying to crush you from outside.
 
