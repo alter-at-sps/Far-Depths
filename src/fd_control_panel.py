@@ -2,6 +2,7 @@ import src.fd_render_lib as rlib
 import src.fd_entity as en
 import src.fd_camera as cam
 import src.fd_units as un
+import src.fd_config as conf
 
 def set_selected(e):
     en.get_entity("control_panel")["selected_entity"] = e
@@ -11,27 +12,27 @@ def setup_ctl_panel():
         "ui_trans": [
             (1, 1),
             (0, 0),
-            (300, 300)
+            (325, 300)
         ],
 
         # button transforms
 
         "build_ui_trans": [
             (1, 1),
-            (25, 25 + 90 + 30),
-            (300 - 35, 25 + 90 + 30 + 30)
+            (35 + conf.ctl_selected_tag_margin, 25 + 90 + 30),
+            (325 - 35, 25 + 90 + 30 + 30)
         ],
 
         "dock_ui_trans": [
             (1, 1),
-            (25, 25 + 90 + 30 - 40),
-            (300 - 35, 25 + 90 + 30 - 40 + 30)
+            (35 + conf.ctl_selected_tag_margin, 25 + 90 + 30 - 40),
+            (325 - 35, 25 + 90 + 30 - 40 + 30)
         ],
 
         "depart_ui_trans": [
             (1, 1),
-            (25, 25 + 90 + 30),
-            (300 - 35, 25 + 90 + 30 + 30)
+            (35 + conf.ctl_selected_tag_margin, 25 + 90 + 30),
+            (325 - 35, 25 + 90 + 30 + 30)
         ],
 
         "on_ui_frame": rlib.ctl_renderer,
@@ -110,6 +111,7 @@ def ctl_tick(e: dict):
     unit = sel.get("unit_index")
     if not unit == None:
         data["selected_title"] = (sel["unit_index"] - 1, sel["pretty_name"])
+        data["selected_index"] = sel["unit_index"] - 1
         data["type"] = 0
 
         if un.has_signal(sel):
@@ -142,6 +144,7 @@ def ctl_tick(e: dict):
         data["materials"] = sel["stored_materials"]
     else:
         data["selected_title"] = sel["pretty_name"]
+        data["selected_index"] = 6
         data["type"] = 1
         data["lost_signal"] = False
 

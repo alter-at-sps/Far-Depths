@@ -36,6 +36,8 @@ nls_outline_width = 10
 
 ctl_border_size = 5
 ctl_button_border_size = 3
+ctl_selected_tag_margin = 25
+ctl_selected_tag_border_size = 3
 
 timer_border_size = 5
 timer_outline_margin = 10

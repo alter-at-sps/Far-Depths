@@ -432,11 +432,13 @@ def ctl_renderer(e, sur):
     data = e["panel_data"]
 
     render_area = cam.translate_ui(t)
-    panel_render_area = (render_area[0] + conf.ctl_border_size, render_area[1] + conf.ctl_border_size, render_area[2] - conf.ctl_border_size * 2, render_area[3] - conf.ctl_border_size * 2)
+    panel_render_area = [render_area[0] + conf.ctl_border_size, render_area[1] + conf.ctl_border_size, render_area[2] - conf.ctl_border_size * 2, render_area[3] - conf.ctl_border_size * 2]
 
     # border and panel background
     pg.draw.rect(sur, conf.ui_foreground_color, render_area)
     pg.draw.rect(sur, conf.ui_background_color, panel_render_area)
+
+    panel_render_area[2] -= conf.ctl_selected_tag_margin
 
     # panel decor tag
 
@@ -530,6 +532,17 @@ def ctl_renderer(e, sur):
 
             tag_area[1] += 15
             font.render_to(sur, tag_area, f" - goal: {mats[3]}", conf.ui_foreground_faded_color, size=10)
+    
+    pg.draw.line(sur, conf.ui_foreground_faded_color, (panel_render_area[0] + panel_render_area[2], panel_render_area[1]), (panel_render_area[0] + panel_render_area[2], panel_render_area[1] + panel_render_area[3]), conf.ctl_selected_tag_border_size)
+
+    for i, select_tag in enumerate(('1', '2', '3', '4', '5', '6', 'B')):
+        tag_area = font.get_rect(select_tag, size=14)
+        tag_area = [panel_render_area[0] + panel_render_area[2] + 8 - tag_area[0] // 2, panel_render_area[1] + 20 + (panel_render_area[3] - 40) // 6 * i - tag_area[1] // 2]
+
+        color_div = 1 if data["selected_index"] == i else 2
+        color = (conf.unit_colors[i][0] // color_div, conf.unit_colors[i][1] // color_div, conf.unit_colors[i][2] // color_div)
+
+        font.render_to(sur, tag_area, select_tag, color, size=14)
 
 def ctl_build_renderer(e, sur):
     if not ui_mode == 1:
