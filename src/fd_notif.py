@@ -21,7 +21,7 @@ def push_warn(sender, message):
     append_log((1, f"> {sender}: {message}"))
     print(f"> {sender} WARN: {message}")
 
-    if sender == f"unit {en.get_entity('control_panel')['selected_entity'].get('unit_index')}":
+    if not en.get_entity("nls_terminal").get("on_ui_frame") == None and sender == f"unit {en.get_entity('control_panel')['selected_entity'].get('unit_index')}":
         return # supress warning notif for selected unit
 
     en.get_entity("nls_terminal")["nls_notif_timer"][1] = 2
@@ -32,7 +32,7 @@ def push_error(sender, message):
 
     en.get_entity("nls_terminal")["nls_notif_timer"][0] = 2
 
-def setup_nls():
+def setup_nls(mock = False):
     nls = en.create_entity("nls_terminal", {
         "ui_trans": [
             (0, 1), # anchor inverts
@@ -45,6 +45,10 @@ def setup_nls():
         "nls_log_console": log_console,
         "nls_notif_timer": [ None, None ]
     })
+
+    if mock:
+        nls.pop("on_ui_frame")
+        nls.pop("on_click")
 
     log_console.clear()
 

@@ -333,29 +333,36 @@ def in_game_loop():
         en.render_entities(sur)
         lvl.render_fow(sur)
 
-        en.render_ui(sur)
-
         if not drag_area == None:
             pg.draw.rect(sur, (64, 255, 64), (drag_area[0][0], drag_area[0][1], drag_area[1][0] - drag_area[0][0], drag_area[1][1] - drag_area[0][1]))
+
+        en.render_ui(sur)
 
         ren.submit()
 
 # == main menu ==
 
-game_started = False
+menu_state = 0
 
 def start_game(e, click):
     if not cam.is_click_on_ui(e["ui_trans"], click):
         return
 
-    global game_started
-    game_started = True
+    global menu_state
+    menu_state = 1
+
+def show_how_to(e, click):
+    if not cam.is_click_on_ui(e["ui_trans"], click):
+        return
+
+    global menu_state
+    menu_state = 3
 
 def menu_loop():
     pg.display.set_caption("Far Depths - Chiling at central")
 
-    global game_started
-    game_started = False
+    global menu_state
+    menu_state = 0
 
     title = en.create_entity("menu_title", {
         "ui_trans": [
@@ -388,6 +395,7 @@ def menu_loop():
         ],
 
         "on_ui_frame": rlib.button_renderer,
+        "on_click": show_how_to,
         "button_border_size": 5,
         "button_text": "How to Play",
     })
@@ -415,7 +423,7 @@ def menu_loop():
             if e.type == pg.WINDOWRESIZED:
                 ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
 
-        if game_started:
+        if not menu_state == 0:
             break
 
         sur = ren.get_surface()
@@ -426,7 +434,7 @@ def menu_loop():
 
     en.reset()
 
-    return 1 # switch to in-game loop
+    return menu_state # switch to in-game loop
 
 # == game stats loop ==
 
@@ -443,6 +451,12 @@ def suffix_count(count):
         return f"{round(count / 1000, 2)}k"
     else:
         return f"{round(count / (1000 * 1000), 2)}M"
+
+def format_time(t):
+    if t < 3600:
+        return f"{int(t // 60):0=2}:{int(t % 60):0=2}"
+    else:
+        return f"{int(t // (60 * 60))}:{int((t // 60) % 60):0=2}:{int(t % 60):0=2}"
 
 def game_over_loop():
     # play game over animation
@@ -525,7 +539,7 @@ def game_over_loop():
         ],
 
         "on_ui_frame": rlib.left_aligned_text_renderer,
-        "text": f"Time remaining: {int(un.game_over_stats[0] // 60):0=2}:{int(un.game_over_stats[0] % 60):0=2}",
+        "text": f"Time remaining: {format_time(un.game_over_stats[0])}",
         "text_size": 16,
         "text_color": conf.ui_foreground_faded_color,
     })
@@ -538,7 +552,7 @@ def game_over_loop():
         ],
 
         "on_ui_frame": rlib.left_aligned_text_renderer,
-        "text": f"Time in-game: {int(un.game_over_stats[1] // 60):0=2}:{int(un.game_over_stats[1] % 60):0=2}",
+        "text": f"Time in-game: {format_time(un.game_over_stats[1])}",
         "text_size": 16,
         "text_color": conf.ui_foreground_faded_color,
     })
@@ -628,6 +642,330 @@ def game_over_loop():
         sur = ren.get_surface()
         sur.fill(conf.ui_background_color)
 
+        en.render_ui(sur)
+
+        ren.submit()
+
+    en.reset()
+    return 0
+
+# == how-to loop ==
+
+def page_change(p):
+    en.reset()
+
+    # setup controls
+
+    return_button = en.create_entity("return_button", {
+        "ui_trans": [
+            (2, 2),
+            (-100, 220),
+            (100, 260)
+        ],
+
+        "on_ui_frame": rlib.button_renderer,
+        "on_click": exit_to_menu,
+
+        "button_border_size": 5,
+        "button_text": "Return to menu",
+    })
+
+    prev_button = en.create_entity("prev_button", {
+        "ui_trans": [
+            (2, 2),
+            (-200, 160),
+            (-20, 200)
+        ],
+
+        "on_ui_frame": rlib.button_renderer,
+        "on_click": prev_page,
+
+        "button_border_size": 5,
+        "button_text": "Previous",
+    })
+
+    next_button = en.create_entity("next_button", {
+        "ui_trans": [
+            (2, 2),
+            (20, 160),
+            (200, 200)
+        ],
+
+        "on_ui_frame": rlib.button_renderer,
+        "on_click": next_page,
+
+        "button_border_size": 5,
+        "button_text": "Next",
+    })
+
+    # setup mock game state for units and level
+
+    cam.set_camera((0, 0))
+
+    if p == 1 or p == 2 or p == 3:
+        lvl.init_level(True)
+        lvl.resize_level_preren(ren.get_surface().get_size())
+
+        if p == 1:
+            lvl.set_circle(lvl.world_to_grid_space((-300, 0)), 16, 2)
+            lvl.set_circle(lvl.world_to_grid_space((300, 0)), 16, 3)
+
+            lvl.set_circle_nav(lvl.world_to_grid_space((-300, 0)), 16, 0)
+            lvl.set_circle_nav(lvl.world_to_grid_space((300, 0)), 16, 0)
+
+            oxy_text = en.create_entity("oxy_title", {
+                "ui_trans": [
+                    (2, 2),
+                    (-290, 100),
+                    (-290, 100),
+                ],
+
+                "on_ui_frame": rlib.text_renderer,
+                "text": "oxy",
+                "text_size": 18,
+                "text_color": conf.ui_foreground_color,
+            })
+
+            goal_text = en.create_entity("goal_title", {
+                "ui_trans": [
+                    (2, 2),
+                    (310, 100),
+                    (310, 100),
+                ],
+
+                "on_ui_frame": rlib.text_renderer,
+                "text": "goal",
+                "text_size": 18,
+                "text_color": conf.ui_foreground_color,
+            })
+
+        base = en.create_entity("player_base", {
+            "transform": None,
+
+            # "on_frame": rlib.rect_renderer,
+            # "rect_color": (254, 254, 254),
+
+            # "tick": un.base_tick,
+
+            # base components
+
+            "stored_materials": [
+                None, # air (unused)
+                0, # rock
+                conf.initial_base_oxy_count, # oxy
+                158, # goal
+            ],
+
+            "power_usage": 16, # initial power usage
+            "busy_generating": 0,
+
+            "units_undocked": 0,
+
+            "pretty_name": (4, "Base (You)")
+        })
+
+        if p == 2:
+            base["transform"] = [ # base at world root
+                (200 + 30, 0 + 20),
+                (60, 40)
+            ]
+
+            base["on_frame"] = rlib.rect_renderer
+            base["rect_color"] = (254, 254, 254)
+
+            base_text = en.create_entity("base_title", {
+                "ui_trans": [
+                    (2, 2),
+                    (230, 60),
+                    (230, 60),
+                ],
+
+                "on_ui_frame": rlib.text_renderer,
+                "text": "vessel",
+                "text_size": 16,
+                "text_color": conf.ui_foreground_color,
+            })
+
+        if p == 1 or p == 2:
+            sig.add_transceiver(lvl.world_to_grid_space((0, 0)))
+
+            u = en.create_entity(f"unit_mock", {
+                "transform": [
+                    None, # set on ticks
+                    (15, 15) 
+                ],
+
+                "grid_trans": lvl.world_to_grid_space((0, 0)),
+                "base_dock_pos": lvl.world_to_grid_space((0, 0)),
+
+                "on_frame": rlib.rect_renderer,
+                "rect_color": conf.unit_colors[0],
+
+                "tick": un.unit_tick,
+
+                # unit components
+
+                "unit_index": 0,
+                "pretty_name": f"Totorial Unit",
+
+                "stored_materials": [
+                    None, # air (unused)
+                    0, # rock
+                    0, # oxy
+                    0, # goal
+                ],
+                "transfer_size": 0,
+
+                "task_queue": [],
+                "mining_queue": set(),
+
+                "already_idle": True,
+
+                "active_transmitter": sig.find_signal(lvl.world_to_grid_space((0, 0))),
+                "auto_return": False,
+
+                "is_docked": True,
+            })
+
+            if p == 2:
+                pos = lvl.world_to_grid_space((200, 0))
+
+                u["grid_trans"] = lvl.world_to_grid_space((-200, 0))
+                u["base_dock_pos"] = (pos[0] - 1, pos[1])
+        
+        if p == 3:
+            base["tick"] = un.base_tick
+
+            ti.setup_timer()
+
+        nls.setup_nls(True)
+
+how_to_page = 0
+
+def next_page(e, click):
+    if not cam.is_click_on_ui(e["ui_trans"], click):
+        return
+
+    global how_to_page
+    if how_to_page < 6:
+        how_to_page += 1
+
+    page_change(how_to_page)
+
+def prev_page(e, click):
+    if not cam.is_click_on_ui(e["ui_trans"], click):
+        return
+
+    global how_to_page
+    if how_to_page > 0:
+        how_to_page -= 1
+
+    page_change(how_to_page)
+
+def exit_to_menu(e, click):
+    if not cam.is_click_on_ui(e["ui_trans"], click):
+        return
+
+    global how_to_page
+    how_to_page = None
+
+def how_to_loop():
+    pg.display.set_caption("Far Depths - Took a trip to the academia")
+
+    global how_to_page
+    how_to_page = 0
+
+    page_change(0)
+
+    is_dragging = False
+    drag_start_pos = None
+
+    is_right_pressed = False
+    dock_base_pressed = False
+
+    while True:
+        # events
+        for e in pg.event.get():
+            if e.type == pg.QUIT:
+                return None
+            if e.type == pg.MOUSEBUTTONDOWN:
+                en.click_event((e.dict["pos"], e.dict["button"]))
+            if e.type == pg.WINDOWRESIZED:
+                ren.recreate_renderer((e.dict["x"], e.dict["y"]), 1)
+                lvl.resize_level_preren((e.dict["x"], e.dict["y"]))
+
+        if how_to_page == None:
+            break
+
+        if how_to_page == 1 or how_to_page == 2:
+            if pg.mouse.get_pressed()[2] and not is_right_pressed:
+                is_right_pressed = True
+
+                mouse_pos = pg.mouse.get_pos()
+                wm_pos = cam.inverse_translate(mouse_pos)
+                gm_pos = lvl.world_to_grid_space(wm_pos)
+
+                un.add_move_task(en.get_entity("unit_mock"), lvl.inbounds(gm_pos), pg.key.get_pressed()[pg.K_LSHIFT])
+            elif not pg.mouse.get_pressed()[2]:
+                is_right_pressed = False
+
+        if how_to_page == 1:
+            # not None if currently dragging
+            drag_area = None
+
+            # not None if finished dragging this frame
+            final_drag_area = None
+
+            if not is_dragging and pg.mouse.get_pressed()[0]:
+                # started dragging
+
+                is_dragging = True
+
+                drag_start_pos = pg.mouse.get_pos()
+
+            elif is_dragging and not pg.mouse.get_pressed()[0]:
+                # stopped dragging
+
+                is_dragging = False
+
+                final_drag_area = ((min(drag_start_pos[0], pg.mouse.get_pos()[0]), min(drag_start_pos[1], pg.mouse.get_pos()[1])), (max(drag_start_pos[0], pg.mouse.get_pos()[0]), max(drag_start_pos[1], pg.mouse.get_pos()[1])))
+                drag_start_pos = None
+
+            if is_dragging:
+                drag_area = ((min(drag_start_pos[0], pg.mouse.get_pos()[0]), min(drag_start_pos[1], pg.mouse.get_pos()[1])), (max(drag_start_pos[0], pg.mouse.get_pos()[0]), max(drag_start_pos[1], pg.mouse.get_pos()[1])))
+
+            # mark area for mining
+            if not final_drag_area == None:
+                w_drag_area = (cam.inverse_translate(final_drag_area[0]), cam.inverse_translate(final_drag_area[1]))
+                g_drag_area = (lvl.inbounds(lvl.world_to_grid_space(w_drag_area[0])), lvl.inbounds(lvl.world_to_grid_space(w_drag_area[1])))
+
+                mining_queue = un.create_mining_queue(g_drag_area)
+
+                if not len(mining_queue) == 0:
+                    # lvl.set_pixels_for_mining(mining_queue)
+                    un.add_mining_task(en.get_entity("unit_mock"), mining_queue, pg.key.get_pressed()[pg.K_LSHIFT])
+        elif how_to_page == 2:
+            if pg.key.get_pressed()[pg.K_r] and not dock_base_pressed:
+                dock_base_pressed = True
+                un.add_dock_task(en.get_entity("unit_mock"), pg.key.get_pressed()[pg.K_LSHIFT], pg.key.get_pressed()[pg.K_LALT])
+            elif not pg.key.get_pressed()[pg.K_r]:
+                dock_base_pressed = False
+
+        en.tick()
+
+        sur = ren.get_surface()
+        sur.fill(conf.ui_background_color)
+
+        if how_to_page == 1 or how_to_page == 2:
+            lvl.render_level(sur)
+
+        en.render_entities(sur)
+
+        if how_to_page == 1:
+            if not drag_area == None:
+                pg.draw.rect(sur, (64, 255, 64), (drag_area[0][0], drag_area[0][1], drag_area[1][0] - drag_area[0][0], drag_area[1][1] - drag_area[0][1]))
+
+        rlib.manual_renderer(how_to_page, sur)
         en.render_ui(sur)
 
         ren.submit()

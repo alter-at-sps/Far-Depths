@@ -49,7 +49,7 @@ level_navgrid = []
 # overlay for player to see what blocks are marked for mining
 level_mark = []
 
-def init_level():
+def init_level(mock = False):
     level.clear()
     level_fow.clear()
     level_navgrid.clear()
@@ -71,7 +71,7 @@ def init_level():
         for j in range(conf.level_size[0]):
             collum.append(0)
             collum_fow.append(0) # max fog
-            collum_nav.append(0)
+            collum_nav.append(0 if not mock else 1)
             collum_mark.append(0)
 
 # level
@@ -136,6 +136,12 @@ def set_circle(pos, radius_squared, val):
         for y in range(pos[1] - radius_squared, pos[1] + radius_squared):
             if (pos[0] - x) ** 2 + (pos[1] - y) ** 2 < radius_squared:
                 set_pixel((x, y), val)
+
+def set_circle_nav(pos, radius_squared, val):
+    for x in range(pos[0] - radius_squared, pos[0] + radius_squared):
+        for y in range(pos[1] - radius_squared, pos[1] + radius_squared):
+            if (pos[0] - x) ** 2 + (pos[1] - y) ** 2 < radius_squared:
+                set_pixel_navgrid((x, y), val)
 
 def world_to_grid_space(pos):
     return ((pos[0] + conf.level_size[0] * point_size // 2) // point_size, (pos[1] + conf.level_size[1] * point_size // 2) // point_size)

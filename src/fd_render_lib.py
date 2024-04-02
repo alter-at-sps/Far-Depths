@@ -810,3 +810,84 @@ def departed_anim_renderer(t, sur):
         return True
 
     return False
+
+# how-to manual content renderer
+
+def manual_renderer(page, sur):
+    center = (sur.get_width() // 2, sur.get_height() // 2)
+
+    if page == 0:
+        font.render_to(sur, (center[0] - 400, center[1] - 220), f"Welcome new worker on board your new submersible.", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 + 20), f"As the pilot of your new vessel, your mission is", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 * 2 + 20), f"to gather as much material codenamed \"goal\"", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 * 3 + 20), f"as possible in a hostile and remote enviroment.", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 + 112), f"Also because of the distance from any infrastructure,", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 * 2 + 112), f"to power your vessel you also have to collect enough", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 * 3 + 112), f"material codenamed \"oxy\" as fuel.", conf.ui_foreground_color)
+    elif page == 1:
+        font.render_to(sur, (center[0] - 400, center[1] - 340), f"To work in this hostile enviroment you can use your Units.", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 340 + 24 + 20), f"Point and click your right mouse button to", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 340 + 24 * 2 + 20), f"move your unit to the pointed location", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 340 + 24 + 88), f"To mine a piece of a deposit, hold and drag with", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 340 + 24 * 2 + 88), f"your left mouse button over the area for mining", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 340 + 176), f"hold down shift to append tasks into a queue", conf.ui_foreground_color)
+    elif page == 2:
+        font.render_to(sur, (center[0] - 400, center[1] - 340), f"Now that you have units filled with materials,", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 340 + 24), f"we need to transfer them to a secure location", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 340 + 24 + 44), f"To dock and transfer units materials press r", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 340 + 24 * 2 + 44), f"your unit will move to the closest dockable structure", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 340 + 24 + 112), f"Again you can append this action when holding shift", conf.ui_foreground_color)
+    elif page == 3:
+        font.render_to(sur, (center[0] - 400, center[1] - 220), f"== Don't forget about time and your reserves! ==", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 + 20), f"Keep checking your timer on top to see if", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 * 2 + 20), f"you are running out of time, that when it runs out", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 * 3 + 20), f"you lose power and fail your mission.", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 + 112), f"To increase your time, supply your vessel with oxy", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 + 176), f"opm (oxy per minute) - how much oxy is consumed per minute", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 * 2 + 176), f"eta - estimated time until loss of power with your", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 * 3 + 176), f"      current oxy usage and oxy reserves in vessel", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 * 4 + 176), f"goal - amount of goal secured in your vessel", conf.ui_foreground_color)
+    elif page == 4:
+        font.render_to(sur, (center[0] - 400, center[1] - 220), f"Your units can also build small structures.", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 + 20), f"This can be helpful for extending your reach to farther", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 * 2 + 20), f"parts of your location as units have only a limited", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 * 3 + 20), f"signal range which can be extended using structures", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 + 112), f"To open units build menu press e in-game", conf.ui_foreground_color)
+    elif page == 5:
+        font.render_to(sur, (center[0] - 400, center[1] - 220), f"To successfully end your mission, you must depart with", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24), f"your vessel", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 + 44), f"After you transfered all wanted materials from your units,", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 * 2 + 44), f"press b to select your vessel and press the depart button", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 + 112), f"== To depart ALL units have to be docked to your vessel! ==", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 220 + 24 * 2 + 112), f"You can recall your units to your vessel using alt+r", conf.ui_foreground_color)
+    elif page == 6:
+        font.render_to(sur, (center[0] - 400, center[1] - 300), f"Now that you know the gist of it, here are the full controls", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 300 + 24 + 20), f"w,a,s,d - to move your camera", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 300 + 24 * 2 + 20), f"1,2,3,4,5,6 - switch between your units", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 300 + 24 * 3 + 20), f"b - switch to your vessel", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 300 + 24 * 4 + 20), f"hold shift while switching to prevent focusing your camera", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 300 + 24 + 136), f"the following controls control the selected unit", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 300 + 24 + 176), f"left mouse button - mark area for mining", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 300 + 24 * 2 + 176), f"right mouse button - move to location", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 300 + 24 * 3 + 176), f"r - dock to closest dockable structure", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 300 + 24 * 4 + 176), f"alt+r - dock to vessel (required for departing)", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 300 + 24 * 5 + 176), f"e - open build menu", conf.ui_foreground_color)
+        font.render_to(sur, (center[0] - 400, center[1] - 300 + 24 * 6 + 176), f"hold shift to append tasks on each other", conf.ui_foreground_color)
+
+        font.render_to(sur, (center[0] - 400, center[1] - 300 + 380), f"good luck!", conf.ui_foreground_color)

@@ -23,6 +23,7 @@ loop_list = [
     mgr.menu_loop,
     mgr.in_game_loop,
     mgr.game_over_loop,
+    mgr.how_to_loop,
 ]
 
 while True:
