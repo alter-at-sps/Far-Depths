@@ -1,4 +1,4 @@
-#version 420
+#version 330
 
 // far depths specific bloom shader which overlays the bloom texture over the output fb
 

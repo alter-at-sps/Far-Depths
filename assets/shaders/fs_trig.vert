@@ -1,12 +1,12 @@
-#version 420
+#version 330
 
 // a basic common hardcoded full screen triangle vs
 
-vec4 verts[3] = {
+vec4 verts[3] = vec4[3](
     vec4(-1, -1, 0, 1),
     vec4(-1, 5, 0, 1),
-    vec4(5, -1, 0, 1),
-};
+    vec4(5, -1, 0, 1)
+);
 
 out vec2 frag_uv;
 

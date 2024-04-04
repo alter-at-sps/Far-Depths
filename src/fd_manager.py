@@ -870,7 +870,7 @@ def exit_to_menu(e, click):
     how_to_page = None
 
 def how_to_loop():
-    pg.display.set_caption("Far Depths - Took a trip to the academia")
+    pg.display.set_caption("Far Depths - Took a trip to academia")
 
     global how_to_page
     how_to_page = 0

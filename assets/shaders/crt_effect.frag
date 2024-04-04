@@ -1,4 +1,4 @@
-#version 420
+#version 330
 
 in vec2 frag_uv;
 out vec4 frag;
