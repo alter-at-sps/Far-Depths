@@ -36,11 +36,20 @@ class FDRenderer:
 
         # disable depricated legacy immediate mode
         pg.display.gl_set_attribute(pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE)
+
+        # create the pygame window and opengl context
         self.win = pg.display.set_mode(res, pg.OPENGL | pg.DOUBLEBUF | pg.RESIZABLE, vsync=1)
-        
+
         self.create_pg_framebuffer()
         self.create_offscreen_framebuffers()
         self.render_passes = []
+
+        # gen mock vao and vbo to conform to core opengl (vertex data is backed inside the vertex shader)
+        vao = gl.glGenVertexArrays(1)
+        gl.glBindVertexArray(vao)
+
+        vbo = gl.glGenBuffers(1)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo)
 
     # creates a "shared" pygame opengl texture framebuffer
     def create_pg_framebuffer(self):
