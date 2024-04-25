@@ -12,7 +12,7 @@ clone this repo with git on your machine and install the required pip modules
 ```sh
 git clone https://github.com/alter-at-sps/Far-Depths.git
 cd Far-Depths
-python -m install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 after you're finished installing, ~~suffer through~~ enjoy the game! (How to play is explained inside the game, be sure to read it!)
